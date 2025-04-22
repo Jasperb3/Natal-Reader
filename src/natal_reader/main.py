@@ -7,11 +7,12 @@ from natal_reader.utils.qdrant_setup import Setup
 from natal_reader.utils.immanuel_natal_chart import get_natal_chart
 from natal_reader.utils.kerykeion_chart_utils import get_kerykeion_subject, get_kerykeion_natal_chart
 from natal_reader.utils.convert_to_pdf import convert_md_to_pdf
-from natal_reader.utils.constants import TIMESTAMP, CHARTS_DIR, NOW_DT, OUTPUT_DIR
+from natal_reader.utils.constants import TIMESTAMP, CHARTS_DIR, NOW_DT, OUTPUT_DIR, CREW_OUTPUTS_DIR
 from natal_reader.crews.analysis_crew.analysis_crew import AnalysisCrew
 from natal_reader.crews.review_crew.review_crew import ReviewCrew
 from natal_reader.crews.gmail_crew.gmail_crew import GmailCrew
-
+from natal_reader.crews.gemini_analysis_crew.gemini_analysis_crew import GeminiAnalysisCrew
+from natal_reader.crews.analysis_merge_crew.analysis_merge_crew import AnalysisMergeCrew
 
 class NatalFlow(Flow[NatalState]):
 
@@ -30,8 +31,9 @@ class NatalFlow(Flow[NatalState]):
 
     
     @listen(get_natal_chart_data)
-    def generate_natal_analysis(self):
-        print("Generating natal analysis")
+    def generate_gpt_natal_analysis(self):
+        print("Generating GPT natal analysis")
+
         inputs = {
             "name": self.state.name,
             "date_of_birth": self.state.dob,
@@ -39,6 +41,7 @@ class NatalFlow(Flow[NatalState]):
             "today": self.state.today,
             "natal_chart": self.state.natal_chart
         }
+
         result = (
             AnalysisCrew()
             .crew()
@@ -46,16 +49,61 @@ class NatalFlow(Flow[NatalState]):
         )
 
         print("Natal analysis generated")
-        self.state.natal_analysis = result.raw
+        self.state.gpt_natal_analysis = result.raw
 
-
-    @listen(generate_natal_analysis)
-    def interrogate_natal_analysis(self):
-        print("Interrogating natal analysis")
+    
+    @listen(generate_gpt_natal_analysis)
+    def generate_gemini_natal_analysis(self):
+        print("Generating Gemini natal analysis")
 
         inputs = {
             "name": self.state.name,
-            "report": self.state.natal_analysis,
+            "natal_chart": self.state.natal_chart,
+            "today": self.state.today,
+            "date_of_birth": self.state.dob,
+            "place_of_birth": self.state.birthplace
+        }
+
+        gemini_natal_analysis = (
+            GeminiAnalysisCrew()
+            .crew()
+            .kickoff(inputs=inputs)
+        )
+
+        print("Gemini natal analysis generated")
+        self.state.gemini_natal_analysis = gemini_natal_analysis.raw
+
+
+    @listen(generate_gemini_natal_analysis)
+    def merge_natal_analyses(self):
+        print("Merging natal analyses")
+
+        inputs = {
+            "name": self.state.name,
+            "gpt_natal_analysis": self.state.gpt_natal_analysis,
+            "gemini_natal_analysis": self.state.gemini_natal_analysis,
+            "today": self.state.today,
+            "date_of_birth": self.state.dob,
+            "place_of_birth": self.state.birthplace
+        }
+
+        merged_natal_analysis = (
+            AnalysisMergeCrew()
+            .crew()
+            .kickoff(inputs=inputs)
+        )
+
+        print("Merged natal analysis generated")
+        self.state.merged_natal_analysis = merged_natal_analysis.raw
+
+
+    @listen(merge_natal_analyses)
+    def review_merged_natal_analysis(self):
+        print("Reviewing merged natal analysis")
+
+        inputs = {
+            "name": self.state.name,
+            "report": self.state.merged_natal_analysis,
             "today": self.state.today,
             "date_of_birth": self.state.dob,
             "place_of_birth": self.state.birthplace
@@ -68,10 +116,10 @@ class NatalFlow(Flow[NatalState]):
         )
 
         print("Natal analysis enhanced")
-        self.state.natal_analysis = enhanced_natal_analysis.raw
+        self.state.final_natal_analysis = enhanced_natal_analysis.raw
 
 
-    @listen(interrogate_natal_analysis)
+    @listen(review_merged_natal_analysis)
     def get_kerykeion_natal_chart(self):
         print("Creating Kerykeion natal chart PNG")
         kerykeion_subject = get_kerykeion_subject(self.state.name, self.state.date_of_birth.year, self.state.date_of_birth.month, self.state.date_of_birth.day, self.state.date_of_birth.hour, self.state.date_of_birth.minute, self.state.birthplace_city, self.state.birthplace_country, self.state.birthplace_longitude, self.state.birthplace_latitude, self.state.birthplace_timezone)
@@ -84,9 +132,9 @@ class NatalFlow(Flow[NatalState]):
         print("Saving natal analysis")
         markdown_file_path = OUTPUT_DIR / f"{self.state.name.replace(' ', '_')}_{TIMESTAMP}.md"
 
-        self.state.natal_analysis = self.state.natal_analysis.replace("[natal_chart]", f"![Natal Chart]({self.state.kerykeion_natal_chart_png})")
+        self.state.final_natal_analysis = self.state.final_natal_analysis.replace("[natal_chart]", f"![Natal Chart]({self.state.kerykeion_natal_chart_png})")
         with open(markdown_file_path, "w") as f:
-            f.write(self.state.natal_analysis)
+            f.write(self.state.final_natal_analysis)
 
         self.state.report_markdown = markdown_file_path
         print(f"Report markdown saved to {markdown_file_path}")
@@ -121,7 +169,7 @@ class NatalFlow(Flow[NatalState]):
 
 
         inputs = {
-            "report_text": self.state.natal_analysis,
+            "report_text": self.state.final_natal_analysis,
             "report_pdf": str(self.state.report_pdf),
             "client": self.state.name,
             "sender": "Ben Jasper",

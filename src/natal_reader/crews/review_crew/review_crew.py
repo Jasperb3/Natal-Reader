@@ -53,7 +53,7 @@ class ReviewCrew():
 	def review_task(self) -> Task:
 		return Task(
 			config=self.tasks_config['review_task'],
-			output_file=f"crew_outputs/{TIMESTAMP}/review_task.md"
+			output_file=f"crew_outputs/{TIMESTAMP}/critique.md"
 		)
 
 	@task

@@ -57,14 +57,14 @@ class AnalysisCrew():
 	def natal_chart_interpretation_task(self) -> Task:
 		return Task(
 			config=self.tasks_config['natal_chart_interpretation_task'],
-			output_file=f"crew_outputs/{TIMESTAMP}/natal_chart_interpretation_task.md"
+			output_file=f"crew_outputs/{TIMESTAMP}/gpt_natal_chart_interpretation_task.md"
 		)
 
 	@task
 	def natal_report_writing_task(self) -> Task:
 		return Task(
 			config=self.tasks_config['natal_report_writing_task'],
-			output_file=f"crew_outputs/{TIMESTAMP}/natal_report_writing_task.md"
+			output_file=f"crew_outputs/{TIMESTAMP}/gpt_natal_report_writing_task.md"
 		)
 
 	@crew
