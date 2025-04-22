@@ -1,0 +1,36 @@
+[project]
+name = "natal_reader"
+version = "0.2.0"
+description = "natal_reader using crewAI"
+authors = [{ name = "Benjamin Jasper", email = "ben.j.jasper@gmail.com" }]
+requires-python = ">=3.12.9,<3.13"
+dependencies = [
+    "crewai[tools]>=0.114.0,<1.0.0",
+    "html2text",
+    "python-dotenv>=1.0.1",
+    "trafilatura>=2.0.0",
+    "google-auth-oauthlib>=1.2.1",
+    "google-generativeai>=0.8.5",
+    "google-genai>=1.2.0",
+    "botocore>=1.36.21",
+    "markdown>=3.7",
+    "immanuel>=1.4.4",
+    "kerykeion==4.26.0",
+    "weasyprint>=65.1",
+    "boto3>=1.37.36",
+    "md2pdf>=1.0.1",
+    "selenium>=4.31.0",
+    "googlemaps>=4.10.0",
+]
+
+[project.scripts]
+kickoff = "natal_reader.main:kickoff"
+run_crew = "natal_reader.main:kickoff"
+plot = "natal_reader.main:plot"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "flow"

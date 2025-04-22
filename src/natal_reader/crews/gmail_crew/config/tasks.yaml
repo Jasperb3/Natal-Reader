@@ -1,0 +1,36 @@
+email_writing_task:
+  description: >
+    Analyze the email content to craft a concise, engaging subject line that captures the essence of the following astrological natal report.
+    Optimize for open rates while maintaining clarity and professionalism.
+    Consider both the technical nature of the content and the personal delivery context.
+    Know that today's date is {today}
+
+    Requirements:
+    - Write in a professional, engaging tone.
+    - Create a concise, impactful subject line (plain text) that sparks curiosity and encourages the client to open the email.
+    - Craft a tailored email body (markdown, no code blocks) that highlights the report's key insights and recommendations, making it easy for the client to understand and act upon. Use markdown formatting for emphasis.
+    - Include a curteous and professional salutation to {client}
+    - Include a professional and warm sign-off from {sender}
+    - Adhere to the structure defined by the `Email` Pydantic model.
+
+    Report content:
+    {report_text}
+  expected_output: >
+    The complete email, including both the subject line (plain text) and the body (markdown, without code blocks), structured according to the `Email` Pydantic model. Exclude any preamble or extraneous commentary.
+  agent: email_writing_agent
+
+gmail_draft_task:
+  description: >
+    Draft an email to {client} including the following:
+
+    1. The provided subject line
+    2. The provided email body
+    3. This attachment file: {report_pdf}
+
+    Use the "GmailAttachmentTool" to draft the email.
+
+    The email should be sent to {email_address}
+  expected_output: >
+    A boolean value (True/False) indicating successful email draft creation and storage
+    in the Gmail system.
+  agent: gmail_draft_agent

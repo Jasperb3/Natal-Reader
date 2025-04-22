@@ -1,0 +1,68 @@
+review_task:
+  description: >
+    Carefully review the generated natal report for depth, coherence, and communicative effectiveness.
+    Assume all astronomical data is correct; focus exclusively on interpretive quality, narrative integrity, and applied insight.
+
+    Assess the report using the following review criteria:
+
+    - Interpretive Coverage:
+        - Are all key chart elements (Ascendant, chart ruler, planets, aspect patterns, dominant houses) addressed?
+        - Are sect, dignity, and planetary condition accurately reflected where relevant?
+        - Are psychological patterns, inner tensions, and life themes synthesized effectively?
+
+    - Narrative Precision:
+        - Is the report free from vagueness, overgeneralization, or technical jargon?
+        - Do sections transition smoothly and build a coherent interpretive arc?
+        - Are redundant interpretations (e.g., repeating planetary content across sections) consolidated?
+
+    - Practical Relevance:
+        - Are symbolic insights translated into relatable, real-life examples?
+        - Does the guidance section provide 3–5 actionable suggestions based on specific chart dynamics?
+
+    - Structural & Formatting Quality:
+        - Is the report cleanly structured, with clear markdown headers and subheadings?
+        - Is the required [natal_chart] placeholder present and correctly placed?
+        - Are technical terms introduced with context or glossary support?
+
+    Provide concise, actionable feedback:
+      - Flag sections needing more depth, clarity, or cohesion
+      - Suggest content to add, refine, or reframe
+      - Highlight opportunities to deepen insight or link chart themes more effectively
+
+    Your goal is to ensure the report is psychologically resonant, narratively polished, and meaningfully interprets the chart in a way that empowers the reader.
+
+    Today's date is {today}
+
+    Report:
+    {report}
+  expected_output: >
+    A structured critique identifying interpretive gaps, redundant or unclear content, and improvement opportunities for psychological richness, narrative clarity, and client applicability.
+  agent: critic
+
+
+enhance_task:
+  description: >
+    Refine and enrich the natal report using the critic’s feedback and your own interpretive expertise, guided by established astrological frameworks and embedded data.
+    Focus on improving psychological depth, narrative clarity, and real-world applicability without duplicating existing content.
+
+    Expand interpretations where needed—especially in:
+      - Planetary placements in house and sign
+      - Key aspects and patterns
+      - House life themes and developmental trajectories
+      - Integration of symbolic and practical meaning
+
+    Use language that is accessible but technically rigorous. Every interpretation must be clearly tied to exact chart details: planetary degrees, house placements, aspects, and configurations.
+    Avoid vague or generalized phrasing; replace it with context-rich, resonant insights that help the reader see themselves in the chart.
+
+    Where relevant, add everyday metaphors, life examples, or guidance suggestions that translate the astrological symbolism into actionable perspectives.
+
+    Ensure all additions are woven smoothly into the existing narrative, maintaining consistent tone, formatting, and structural flow.
+  
+    Note that today's date is {today} 
+
+    Report:
+    {report}
+  expected_output: >
+    A revised and enriched version of the natal report that deepens the interpretive content, enhances clarity and resonance, and integrates feedback seamlessly—formatted in clean markdown with the required natal chart placeholder.
+  agent: report_enhancer
+

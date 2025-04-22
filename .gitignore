@@ -1,0 +1,12 @@
+.env
+__pycache__/
+lib/
+.DS_Store
+src/natal_reader/subjects/
+*.json
+.venv/
+outputs/
+crew_outputs/
+astro_docs/
+tests/
+

@@ -1,0 +1,143 @@
+natal_chart_interpretation_task:
+  description: >
+    Generate a comprehensive, degree-accurate interpretation of the subject's natal chart using the full astronomical dataset provided.
+    Use the tools available to you to research information and find additional details relevant to the subject's chart.
+    Output should be modular and clearly structured to serve as the analytical backbone for the final report.
+
+    Required analytical coverage:
+
+    - Chart Context:
+        - Classify chart shape (e.g., Bucket, Locomotive) and interpret implications for personality flow.
+        - Determine diurnal/nocturnal status and analyze sect alignment of each planet.
+        - Note Moon phase and house system used.
+
+    - Element, Modality, Hemisphere, and Quadrant Balance:
+        - Provide count summaries and interpretations of elemental, modal, hemispheric, and quadrant distributions.
+        - Compare dominant and deficient elements/modalities and explain how this contrast may express behaviorally or psychologically.
+        - Relate this to psychological temperament and inner vs outer orientation.
+
+    - Ascendant and Chart Ruler:
+        - Analyze the rising sign and chart ruler's sign, house, aspects, dignities, motion, and sect.
+        - Highlight mutual reception, angularity, and any dispositorship chains.
+        - Interpret the chart ruler's overall influence on life trajectory and self-expression.
+
+    - Planetary Positions and Conditions:
+        - Analyze each classical planet's sign, house, decan, dignity/debility, sect status, and motion (direct/retrograde).
+        - Include a summary of the symbolic meaning of the house each planet occupies.
+        - Include minor points (e.g., Chiron, Part of Fortune, Vertex, Lilith variations, Juno, Ceres) and lunar nodes with psychological framing.
+        - Flag and interpret out-of-bounds planets clearly, discussing their potential unconventional expressions.
+        - Provide one to two grounded psychological or behavioral examples for each planet.
+
+    - Aspects:
+        - Identify all major aspects (conjunction, opposition, trine, square, sextile, quincunx) with orb and degree details.
+        - Distinguish applying vs separating and associative vs dissociate aspects.
+        - Flag tight aspects (<2° orb) and interpret their intensification clearly.
+        - Group aspects thematically (communication, transformation, relationships, drive, etc.).
+        - Highlight configurations (T-squares, yods, grand trines) if present.
+
+    - Points and Angles:
+        - Analyze Ascendant, Descendant, MC, IC angles individually, emphasizing their role in life direction, relational dynamics, and private vs public identity.
+        - Provide interpretations for symbolic points (Chiron, Nodes, Lilith variants, Vertex, Ceres, Juno, and Part of Fortune), emphasizing karmic or spiritual implications and integrating real-life scenarios.
+
+    - Eclipse and Syzygy Influence:
+        - Clearly analyze pre- and post-natal solar and lunar eclipses as indicators of inherited karmic patterns, transformational crises, or major life milestones.
+        - Interpret the natal syzygy point as an evolutionary anchor shaping identity and psychological temperament.
+
+    - Planetary Strengths & Focal Points:
+        - Highlight planets with high angularity, multiple aspects, rulership, or other prominence.
+        - Identify stelliums and repeated thematic clusters (e.g., several planets in same sign or house) and their narrative significance.
+
+    Output guidelines:
+    - Use clean markdown (no code blocks)
+    - Maintain interpretive richness anchored in concrete chart features
+    - Degree-accurate and evidence-based
+    - Ensure modularity for seamless integration into report generation
+
+    Subject's Name: {name}
+    Today's date: {today}
+    Natal Chart: {natal_chart}
+
+  expected_output: >
+    A detailed, degree-precise analysis of the subject's natal chart, organized for seamless report integration and grounded in psychological insight.
+  agent: natal_chart_interpreter
+
+
+natal_report_writing_task:
+  description: >
+    Translate the structured natal chart interpretation into a polished, emotionally intelligent, and narratively cohesive report.
+    Use the tools available to you to research information and find additional details relevant to the subject's chart.
+    Preserve technical accuracy while enhancing clarity, readability, and real-life relevance.
+
+    Report format (markdown):
+
+    0. Title Block and Chart Header:
+        ```
+        # Natal Chart for {name}
+        Date of Report: {today}
+
+        [natal_chart]
+
+        **Date of Birth:** {date_of_birth}  
+        **Place of Birth:** {place_of_birth}
+        ```
+
+    1. Introduction:
+        - Briefly explain chart shape, Moon phase, chart type, and house system.
+        - Frame the chart as symbolic potential, not fate.
+
+    2. Energetic Balance & Pattern Emphasis:
+        - Summarize elemental/modal/hemisphere/quadrant balance.
+        - Discuss psychological orientation and dominant vs missing energies.
+        - Tie this to emotional tone, interpersonal style, and life attitude.
+
+    3. Ascendant & Chart Ruler:
+        - Describe instinctive approach, life posture and self-presentation via Ascendant.
+        - Analyze chart ruler's house, sign, dignity, and aspects, discussing its overarching role and influence.
+
+    4. Planetary Overview:
+        - One section per planet.For each planet provide a thorough and comprehensive overview including:
+            - Sign + house + aspects (plain language, not symbolic codes)
+            - Behavioral traits, coping styles, inner drives
+            - Example of real-world expression
+
+        - Clearly integrate symbolic points (Chiron, Nodes, Vertex, etc.) and explain them in psychological or karmic terms.
+
+    5. Aspects & Archetypal Dynamics:
+        - Clearly detail major configurations and highlight tight aspects (<2° orb).
+        - Emphasize emotional, interpersonal, and cognitive patterns.
+        - Highlight key tensions or harmonies between planetary drives.
+        - Group aspects thematically and avoid raw listings.
+
+    6. Eclipse and Syzygy Significance:
+        - Explain eclipse relevance as symbolic milestones or inherited karmic threads.
+        - Position syzygy point as a subtle anchor shaping identity.
+
+    7. House Emphasis:
+        - Identify houses of concentrated planetary energy.
+        - Reflect on domains of focus, neglect, or ambivalence in life experience.
+
+    8. Psychological and Developmental Themes:
+        - Synthesize the chart's core conflicts, repeating patterns, and latent potentials.
+        - Include emotional regulation strategies or growth arcs.
+        - Avoid clinical tone—use evocative but grounded metaphors.
+
+    9. Guidance and Reflections:
+        - Offer 3–5 personalized, actionable insights rooted in chart data.
+        - Ensure advice is empowering, emotionally resonant, and realistically applicable.
+
+    10. Conclusion:
+        - Recap gifts, challenges, and potential trajectory.
+        - Emphasize lifelong integration and individuation journey.
+
+    11. Glossary:
+        - Define key terms clearly and accessibly.
+
+    Style:
+    - Markdown (no code blocks)
+    - Use emotionally intelligent, supportive language
+    - Maintain clarity, structure, and symbolic coherence
+    - Prioritize flow and narrative unity
+
+  expected_output: >
+    A logically structured, engaging and emotionally insightful natal chart report written in markdown without code blocks, integrating symbolic, psychological, and developmental insights.
+  agent: natal_report_writer

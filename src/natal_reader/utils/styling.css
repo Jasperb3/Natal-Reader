@@ -1,0 +1,449 @@
+/* ====== GOOGLE FONTS IMPORT ====== */
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lora:wght@400;700&family=STIX+Two+Text:wght@400;700&family=Lato:wght@400;700&display=swap');
+
+/* 
+ * ASTROLOGICAL REPORT STYLESHEET
+ * Optimized for retail investor astrological reports
+ * Focus on readability, professionalism, and clear data presentation
+ * Compatible with WeasyPrint PDF renderer
+ * Font sizes increased for better readability on various screen sizes (trade-off: less density)
+ */
+
+/* ====== PAGE LAYOUT ====== */
+@page {
+    size: A4;
+    margin: 25mm 20mm; /* Balanced margins for better whitespace */
+    @top-center {
+        content: string(doctitle);
+        font-family: 'Lato', 'Arial', sans-serif; /* Sans-serif for headers */
+        font-size: 9.5pt; /* Slightly larger */
+        color: #505050; /* Muted dark gray instead of black */
+    }
+    @bottom-right {
+        content: "Page " counter(page); /* Added "Page" text for clarity */
+        font-family: 'Lato', 'Arial', sans-serif;
+        font-size: 9.5pt; /* Slightly larger */
+        color: #505050;
+    }
+    @bottom-left {
+        content: "Confidential – For the intended recipient only"; /* Added footer note */
+        font-family: 'Lato', 'Arial', sans-serif;
+        font-size: 8.5pt; /* Slightly larger */
+        color: #808080;
+    }
+}
+
+/* First page styling (cover page) */
+@page :first {
+    margin: 35mm 20mm 25mm 20mm; /* Larger top margin */
+    @top-center { 
+        content: none; 
+    }
+    @bottom-left {
+        content: "Confidential - For the intended recipient only";
+        font-family: 'Lato', 'Arial', sans-serif;
+        font-size: 8.5pt; /* Slightly larger */
+        color: #808080;
+    }
+    @bottom-right {
+        content: "Page " counter(page);
+        font-family: 'Lato', 'Arial', sans-serif;
+        font-size: 9.5pt; /* Slightly larger */
+        color: #505050;
+    }
+}
+
+/* ====== TYPOGRAPHY & MAIN CONTENT ====== */
+/* 
+ * Using font pairing: Atkinson Hyperlegible (sans-serif) for headings and 
+ * STIX Two Text/Lora (serif) for body text - scientifically proven to improve readability
+ */
+body {
+    font-family: 'STIX Two Text', 'Lora', Georgia, 'Times New Roman', Times, serif;
+    font-size: 12pt; /* Increased base font size */
+    line-height: 1.55; /* Adjusted line height */
+    text-align: left; /* Left-aligned text is easier to read than justified */
+    color: #333333; /* Dark gray instead of black for reduced eye strain */
+    max-width: 100%;
+    hyphens: auto; /* Enable hyphenation for better text flow */
+}
+
+/* Store document title for headers */
+h1 {
+    string-set: doctitle content();
+}
+
+/* ====== HEADINGS ====== */
+/* Clear visual hierarchy with consistent color scheme */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Atkinson Hyperlegible', 'Arial', 'Liberation Sans', sans-serif;
+    margin-top: 1.3em; /* Adjusted spacing */
+    margin-bottom: 0.7em; /* Adjusted spacing */
+    line-height: 1.25;
+    break-after: avoid; /* Prevent page breaks immediately after headings */
+    break-inside: avoid; /* Prevent breaks within headings */
+    page-break-after: avoid; /* Alias for older renderers */
+    page-break-inside: avoid; /* Alias */
+    color: #103a63; /* Navy blue for professional financial look */
+}
+
+h1 {
+    font-size: 24pt; /* Increased */
+    font-weight: 700;
+    margin-top: 0; /* No margin at top of page */
+    padding-bottom: 9pt;
+    border-bottom: 2.5px solid #103a63; /* Slightly thicker */
+    color: #103a63;
+}
+
+h2 {
+    font-size: 20pt; /* Increased */
+    font-weight: 600;
+    break-before: auto; /* Default: no page break before h2 */
+    border-bottom: 1px solid #dddddd; /* Subtle underline */
+    padding-bottom: 6pt;
+    margin-top: 2em; /* Increased space before new sections */
+}
+
+/* Force page breaks before major section headings */
+h2[id="market--industry-context"],
+h2[id="competitor-analysis"],
+h2[id="financial-deep-dive"],
+h2[id="analyst--professional-insights"],
+h2[id="risk-disclosure--mitigation"],
+h2[id="recent-news-articles"],
+h2[id="forward-looking-outlook"],
+h2[id="investment-recommendation"],
+h2[id="conclusion"] {
+    break-before: page;
+    page-break-before: page; /* Alias */
+}
+
+h3 {
+    font-size: 17pt; /* Increased */
+    font-weight: 600;
+    margin-top: 1.7em; /* Adjusted */
+    border-bottom: 1px solid #eeeeee;
+    padding-bottom: 4pt;
+}
+
+h4 {
+    font-size: 14pt; /* Increased */
+    font-weight: 600;
+    margin-top: 1.4em; /* Adjusted */
+}
+
+h5 {
+    font-size: 13pt; /* Increased */
+    font-weight: 600;
+}
+
+h6 {
+    font-size: 12pt; /* Increased */
+    font-weight: 600;
+    font-style: italic;
+}
+
+/* ====== PARAGRAPHS & TEXT ELEMENTS ====== */
+p {
+    margin: 0 0 1.0em 0; /* Adjusted margin */
+    orphans: 3; /* Minimum lines at bottom of page */
+    widows: 3; /* Minimum lines at top of page */
+}
+
+strong {
+    font-weight: 700; /* Bolder for better contrast */
+}
+
+em {
+    font-style: italic;
+}
+
+code {
+    font-family: 'Consolas', 'Monaco', monospace; /* Better monospace fonts */
+    background-color: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 10pt; /* Increased */
+}
+
+/* ====== LISTS ====== */
+ul {
+    margin-left: 20px; /* Increased indent for better hierarchy */
+    margin-bottom: 1em;
+    list-style-type: disc; /* Explicit disc style */
+}
+
+ol {
+    margin-left: 20px;
+    margin-bottom: 1em;
+    list-style-type: decimal; /* Decimal for better readability */
+}
+
+li {
+    margin-bottom: 0.5em; /* Spacing between list items */
+    padding-left: 5px; /* Add some padding after the bullet */
+}
+
+/* Nested lists styling */
+li ul, li ol {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+}
+
+/* ====== TABLES ====== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    break-inside: avoid !important; /* STRONGLY prevent breaking tables */
+    page-break-inside: avoid !important; /* Alias */
+    margin: 1.5em 0;
+    table-layout: auto; /* Changed from 'fixed' to 'auto' */
+    word-wrap: break-word;
+    font-size: 9.5pt; /* Increased */
+    font-family: 'Lato', 'Arial', 'Liberation Sans', sans-serif; /* Sans-serif for data */
+}
+
+caption {
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 11pt; /* Increased */
+    color: #103a63;
+    break-after: avoid; /* Avoid break between caption and table */
+    page-break-after: avoid; /* Alias */
+}
+
+th, td {
+    border: 1.5px solid #bbb;
+    padding: 10px 12px; /* Increased vertical padding */
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background-color: #dde6ef;
+    font-weight: 700;       /* Bolder header */
+    color: #103a63;
+    border-bottom: 2.5px solid #103a63;
+}
+
+/* Row styling */
+tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Data columns alignment */
+.right-align, [align="right"], td[style*="text-align: right"] {
+    text-align: right;
+}
+
+.center-align, [align="center"], td[style*="text-align: center"] {
+    text-align: center;
+}
+
+/* Table with colored indicators */
+.metrics-table .positive, td[data-trend="positive"], .positive {
+    color: #1a8754; /* Green for positive values */
+}
+
+.metrics-table .negative, td[data-trend="negative"], .negative {
+    color: #dc3545; /* Red for negative values */
+}
+
+.metrics-table .neutral, td[data-trend="neutral"], .neutral {
+    color: #6c757d; /* Gray for neutral values */
+}
+
+/* ====== IMAGES & FIGURES ====== */
+img {
+    max-width: 90%;
+    height: auto;
+    display: block;
+    margin: 1.5em auto;
+    border: 1px solid #e0e0e0; /* Lighter border */
+    padding: 5px;
+}
+
+figure {
+    display: block;
+    margin: 1.5em auto;
+    text-align: center;
+    break-inside: avoid !important; /* STRONGLY prevent breaking figures */
+    page-break-inside: avoid !important; /* Alias */
+    width: 100%; /* Full width */
+}
+
+/* Fixed figcaption to spread across page width */
+figcaption {
+    display: block;
+    width: 100%; /* Ensure it spans full width */
+    font-size: 10pt; /* Increased */
+    color: #505050;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    font-style: italic;
+    text-align: justify; /* Justify the caption */
+}
+
+/* ====== CHARTS & GRAPHS ====== */
+.chart-container, div[class*="chart"], div[id*="chart"] {
+    break-inside: avoid !important; /* STRONGLY prevent breaking charts */
+    page-break-inside: avoid !important; /* Alias */
+    margin: 1.5em 0;
+    border: 1px solid #e0e0e0;
+    padding: 10px;
+    background-color: #ffffff;
+}
+
+.chart-title, [class*="chart"] h4, [id*="chart"] h4 {
+    font-weight: 600;
+    font-size: 12pt; /* Increased */
+    color: #103a63;
+    margin-bottom: 10px;
+    text-align: center;
+    break-after: avoid; /* Keep title with chart */
+    page-break-after: avoid; /* Alias */
+}
+
+.chart-legend, div[class*="legend"], div[id*="legend"] {
+    font-size: 10pt; /* Increased */
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* ====== HYPERLINKS ====== */
+a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ====== BLOCKQUOTES ====== */
+blockquote {
+    margin: 1.2em 0;
+    padding: 10px 20px;
+    border-left: 4px solid #103a63; /* Match header color */
+    background-color: #f8f9fa; /* Light gray background */
+    font-style: italic;
+    color: #505050;
+    break-inside: avoid !important; /* STRONGLY prevent breaking blockquotes */
+    page-break-inside: avoid !important; /* Alias */
+}
+
+/* ====== HORIZONTAL RULE ====== */
+hr {
+    border: none;
+    height: 1px;
+    background-color: #dddddd; /* Lighter color */
+    margin: 2em 0;
+}
+
+
+/* Disclaimer and legal text styling */
+.disclaimer,
+div[class*="disclaimer"],
+div[class*="legal"],
+section[class*="disclaimer"] {
+    font-size: 9pt; /* Increased */
+    color: #666;
+    line-height: 1.3;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background-color: #f9f9f9;
+    margin-top: 2em;
+    break-inside: avoid; /* Avoid breaks in disclaimers */
+    page-break-inside: avoid;
+}
+
+/* Specific styling for the disclaimer paragraph */
+p:last-child {
+    /* Removed margin-top: 2em; as it could conflict with .final-disclaimer */
+}
+
+
+/* ====== PRINT OPTIMIZATION ====== */
+@media print {
+    /* Ensure page breaks don't occur in awkward places */
+    p, h2, h3, h4, h5, h6 {
+        orphans: 3;
+        widows: 3;
+    }
+    
+    /* Re-apply break controls specifically for print */
+    h1, h2, h3, h4, h5, h6 {
+        break-after: avoid;
+        page-break-after: avoid;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    table, figure, blockquote, .chart-container, .recommendation, .highlight, .disclaimer {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* Force page breaks before major sections */
+    .new-section,
+    h2[class*="section-start"],
+    h2[id*="section-start"],
+    h2[id="market--industry-context"],
+    h2[id="competitor-analysis"],
+    h2[id="financial-deep-dive"],
+    h2[id="analyst--professional-insights"],
+    h2[id="risk-disclosure--mitigation"],
+    h2[id="recent-news-articles"],
+    h2[id="forward-looking-outlook"],
+    h2[id="investment-recommendation"],
+    h2[id="conclusion"] {
+        break-before: page;
+        page-break-before: page;
+    }
+    
+    /* Black and white friendly elements */
+    th {
+        background-color: #f0f0f0 !important; /* Lighter gray for B&W printing */
+        border-bottom: 2px solid #000000 !important;
+        color: #000000 !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        color: #000000 !important;
+    }
+    
+    .risk-high, .sell, [data-risk="high"], [data-recommendation="sell"] {
+        color: #000000 !important;
+        font-weight: 900 !important; /* Bolder for emphasis in B&W */
+    }
+    
+    .risk-medium, .hold, [data-risk="medium"], [data-recommendation="hold"] {
+        color: #000000 !important;
+        font-weight: 700 !important;
+    }
+    
+    .risk-low, .buy, .positive, [data-risk="low"], [data-recommendation="buy"] {
+        color: #000000 !important;
+        font-weight: 700 !important;
+    }
+    
+    .negative, td[data-trend="negative"] {
+        color: #000000 !important;
+        font-weight: 900 !important;
+    }
+}
+
+/* ====== DISCLAIMER STYLING (END OF REPORT) ====== */
+.final-disclaimer {
+    break-before: avoid !important; /* STRONGLY prevents page break before */
+    page-break-before: avoid !important; /* Alias */
+    font-size: 9pt;        /* Increased slightly */
+    color: #888;       /* Lighter gray */
+    text-align: center;    /* Centered text */
+    border-top: 1px solid #dddddd; /* Separator line */
+    padding-top: 10px;     /* Space between line and text */
+    margin-top: 2em;      /* Space after last content */
+}
