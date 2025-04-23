@@ -1,0 +1,2 @@
+2025-04-23 12:06:55 - Function setup_qdrant(args = (<natal_reader.main.NatalFlow object at 0x7f61d7170cb0>,)) (kwargs = {}) took 0.9360 seconds
+2025-04-23 12:06:55 - Function get_natal_chart_data(args = (<natal_reader.main.NatalFlow object at 0x7f61d7170cb0>,)) (kwargs = {}) took 0.1866 seconds

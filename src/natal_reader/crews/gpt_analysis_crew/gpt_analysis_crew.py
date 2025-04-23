@@ -24,10 +24,16 @@ gpt41mini = LLM(
 	temperature=0.7
 )
 
+gpt41nano = LLM(
+	model="gpt-4.1-nano",
+	api_key = os.getenv("OPENAI_API_KEY"),
+	temperature=0.7
+)
+
 
 @CrewBase
-class AnalysisCrew():
-	"""AnalysisCrew crew"""
+class GPTAnalysisCrew():
+	"""GPTAnalysisCrew crew"""
 
 	agents_config = 'config/agents.yaml'
 	tasks_config = 'config/tasks.yaml'
@@ -69,7 +75,7 @@ class AnalysisCrew():
 
 	@crew
 	def crew(self) -> Crew:
-		"""Creates the AnalysisCrew crew"""
+		"""Creates the GPTAnalysisCrew crew"""
 		# To learn how to add knowledge sources to your crew, check out the documentation:
 		# https://docs.crewai.com/concepts/knowledge#what-is-knowledge
 

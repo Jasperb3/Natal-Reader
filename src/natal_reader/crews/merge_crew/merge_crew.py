@@ -12,9 +12,16 @@ gpt41 = LLM(
 	temperature=0.7
 )
 
+gemini_flash = LLM(
+	model="gemini/gemini-2.5-flash-preview-04-17",
+	api_key = os.getenv("GEMINI_API_KEY"),
+	temperature=0.7,
+	timeout=600
+)
+
 @CrewBase
-class AnalysisMergeCrew():
-    """AnalysisMergeCrew crew"""
+class MergeCrew():
+    """MergeCrew crew"""
 
     # Learn more about YAML configuration files here:
     # Agents: https://docs.crewai.com/concepts/agents#yaml-configuration-recommended
@@ -28,6 +35,7 @@ class AnalysisMergeCrew():
     def report_merger(self) -> Agent:
         return Agent(
             config=self.agents_config['report_merger'],
+            llm=gemini_flash,
             verbose=True
         )
 
@@ -43,7 +51,7 @@ class AnalysisMergeCrew():
 
     @crew
     def crew(self) -> Crew:
-        """Creates the AnalysisMergeCrew crew"""
+        """Creates the MergeCrew crew"""
         # To learn how to add knowledge sources to your crew, check out the documentation:
         # https://docs.crewai.com/concepts/knowledge#what-is-knowledge
 

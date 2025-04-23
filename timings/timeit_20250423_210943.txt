@@ -1,0 +1,18 @@
+Timing Log - 2025-04-23 21:09:47
+
+2025-04-23 21:09:55 - Function setup_qdrant(args = (<natal_reader.main.NatalFlow object at 0x7f6a437657f0>,)) (kwargs = {}) took 0.8433 seconds
+2025-04-23 21:09:56 - Function get_natal_chart_data(args = (<natal_reader.main.NatalFlow object at 0x7f6a437657f0>,)) (kwargs = {}) took 0.2175 seconds
+generate_gpt_natal_analysis used 91,841 tokens
+2025-04-23 21:14:07 - Function generate_gpt_natal_analysis(args = (<natal_reader.main.NatalFlow object at 0x7f6a437657f0>,)) (kwargs = {}) took 251.4302 seconds
+generate_gemini_natal_analysis used 46,015 tokens
+2025-04-23 21:16:31 - Function generate_gemini_natal_analysis(args = (<natal_reader.main.NatalFlow object at 0x7f6a437657f0>,)) (kwargs = {}) took 143.6649 seconds
+merge_natal_analyses used 22,801 tokens
+2025-04-23 21:17:13 - Function merge_natal_analyses(args = (<natal_reader.main.NatalFlow object at 0x7f6a437657f0>,)) (kwargs = {}) took 42.6146 seconds
+review_merged_natal_analysis used 62,712 tokens
+2025-04-23 21:24:07 - Function review_merged_natal_analysis(args = (<natal_reader.main.NatalFlow object at 0x7f6a437657f0>,)) (kwargs = {}) took 413.8895 seconds
+2025-04-23 21:24:15 - Function get_kerykeion_natal_chart(args = (<natal_reader.main.NatalFlow object at 0x7f6a437657f0>,)) (kwargs = {}) took 7.2522 seconds
+2025-04-23 21:24:17 - Function save_natal_analysis(args = (<natal_reader.main.NatalFlow object at 0x7f6a437657f0>,)) (kwargs = {}) took 2.4038 seconds
+send_natal_analysis used 19,530 tokens
+2025-04-23 21:24:46 - Function send_natal_analysis(args = (<natal_reader.main.NatalFlow object at 0x7f6a437657f0>,)) (kwargs = {}) took 28.6290 seconds
+Total time taken: 14 minutes and 51 seconds
+Total tokens used: 242,899Final report saved to: /home/j/ai/crewAI/astro/natal_reader/natal_reader/outputs/2025-04-23/Benjamin_Jasper_20250423_210943.pdf

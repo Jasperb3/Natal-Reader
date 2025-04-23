@@ -1,0 +1,77 @@
+report_merging_task:
+  description: >
+    Task: Act as a Master Editor and Synthesist. Merge the content of two independently written natal chart reports into a single unified, high-quality report narrative.
+
+    Context: Both input reports are based on the same astronomical chart data but may offer different interpretive insights, tones, or structural approaches. Your task is to extract the most valuable, psychologically resonant, and data-grounded content from both and combine them into a cohesive, flowing narrative.
+
+    Methodology:
+    1. Analyze Both Reports: Read both reports thoroughly to understand their content, structure, tone, and key interpretations.
+    2. Synthesize & Consolidate: Go section by section according to the Required Output Structure. Identify overlapping interpretations and consolidate them without repetition. Where interpretations diverge or offer complementary insights, integrate both perspectives to enrich the final report section.
+    3. Select Best Content: Combine all content where possible but if conflicting or redundant information cannot be integrated smoothly, select the interpretation that is:
+      * More psychologically nuanced or offers deeper insight.
+      * More clearly and accurately grounded in specific chart data points (sign, house, aspect, dignity, etc.).
+      * More emotionally resonant, relatable, or practically applicable for the reader.
+    4. Ensure Cohesion and Tone: Resolve any inconsistencies in tone, voice, or style between the two reports to create a single, consistent, emotionally intelligent, empowering, and client-oriented narrative. Ensure smooth transitions between all paragraphs and sections.
+    5. Adhere to Structure: Organize all the merged content precisely according to the Required Output Structure listed below.
+    6. Maintain Data Integrity: Do not invent new astrological placements, aspects, or interpretations that were not present in or derived from the provided reports.
+
+    Format/Structure:
+    - Use the following markdown-based report structure:
+      0. Title Block including the `[natal_chart]` placeholder:
+        ```
+        # Natal Chart for {name}
+        Date of Report: {today}
+
+        [natal_chart]
+
+        **Date of Birth:** {date_of_birth}  
+        **Place of Birth:** {place_of_birth}
+        
+        ## Introduction
+        [Merged Introduction content]
+
+        ## Energetic Balance & Pattern Emphasis
+        [Merged analysis of elements, modalities, chart shape, and overall patterns]
+
+        ## Core Identity: The Big 3 (Ascendant, Sun, Moon)
+        [Merged interpretation of Ascendant, Sun, and Moon, including interplay]
+
+        ## Planetary Psychology and Celestial Dynamics
+        [Merged interpretation for each planet (Mercury through Pluto, plus Chiron), covering sign, house meaning, and relevant condition/motion as derived from the input reports]
+
+        ## Aspects & Archetypal Dynamics
+        [Merged interpretation of significant aspects and aspect patterns derived from the input reports]
+
+        ## Eclipse and Syzygy Significance
+        [Merged interpretation of eclipse and syzygy points derived from the input reports]
+
+        ## House Emphasis
+        [Merged summary or detailed analysis of house themes, nodal axis, and areas of life emphasis]
+
+        ## Psychological and Developmental Themes
+        [Merged synthesis of overarching psychological and developmental themes]
+
+        ## Guidance and Reflections
+        [Merged suggestions for harnessing potential and navigating challenges]
+
+        ## Conclusion
+        [Merged concluding remarks]
+
+        ## Glossary
+        [Consolidated glossary of astrological terms used in the final report]
+        ```
+
+    **Constraints:**
+      *   Format output exclusively in clean markdown, no code blocks within the report text.
+      *   Include the `[natal_chart]` placeholder exactly as shown in the Title Block.
+      *   Ensure all merged content flows logically and avoids redundancy.
+
+    Report 1:
+    {gpt_natal_analysis}
+
+    Report 2:
+    {gemini_natal_analysis}
+
+  expected_output: >
+    A single, comprehensive natal chart report narrative in clean markdown format, representing a synthesis of the best insights from both input reports, organized according to the specified structure, characterized by emotional intelligence, psychological richness, symbolic clarity, and practical relevance.
+  agent: report_merger

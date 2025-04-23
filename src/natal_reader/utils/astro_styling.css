@@ -1,0 +1,610 @@
+/* ====== GOOGLE FONTS IMPORT ====== */
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lora:wght@400;700&family=STIX+Two+Text:wght@400;700&family=Lato:wght@400;700&family=Cormorant+Garamond:wght@400;600;700&display=swap');
+
+/* Add astrological symbols font */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Symbols:wght@400;700&display=swap');
+
+/* 
+ * ASTROLOGICAL REPORT STYLESHEET
+ * Optimized for astrological reports and charts
+ * Focus on readability, mystical aesthetics, and clear data presentation
+ * Compatible with WeasyPrint PDF renderer
+ */
+
+/* ====== PAGE LAYOUT ====== */
+@page {
+    size: A4;
+    margin: 25mm 20mm;
+    @top-center {
+        content: string(doctitle);
+        font-family: 'Lato', 'Arial', sans-serif; /* Sans-serif for headers */
+        font-size: 9.5pt;
+        color: #2e0854;
+    }
+    @bottom-right {
+        content: "Page " counter(page);
+        font-family: 'Lato', 'Arial', sans-serif;
+        font-size: 9.5pt;
+        color: #2e0854;
+    }
+    @bottom-left {
+        content: "Personal Astrological Analysis";
+        font-family: 'Lato', 'Arial', sans-serif;
+        font-size: 8.5pt;
+        color: #606060;
+    }
+}
+
+/* First page styling (cover page) */
+@page :first {
+    margin: 35mm 20mm 25mm 20mm;
+    @top-center { 
+        content: none; 
+    }
+    @bottom-left {
+        content: "Personal Astrological Analysis";
+        font-family: 'Lato', 'Arial', sans-serif;
+        font-size: 8.5pt;
+        color: #606060;
+    }
+    @bottom-right {
+        content: "Page " counter(page);
+        font-family: 'Lato', 'Arial', sans-serif;
+        font-size: 9.5pt;
+        color: #2e0854;
+    }
+}
+
+/* ====== TYPOGRAPHY & MAIN CONTENT ====== */
+/* 
+ * Using font pairing: Atkinson Hyperlegible (sans-serif) for headings and 
+ * STIX Two Text/Lora (serif) for body text
+ */
+body {
+    font-family: 'STIX Two Text', 'Lora', Georgia, 'Times New Roman', Times, serif;
+    font-size: 14pt;
+    line-height: 1.55;
+    text-align: left;
+    color: #333333;
+    max-width: 100%;
+    hyphens: auto;
+}
+
+/* Store document title for headers */
+h1 {
+    string-set: doctitle content();
+}
+
+/* ====== HEADINGS ====== */
+/* Astrological color scheme with purples and gold accents */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', 'Atkinson Hyperlegible', 'Arial', sans-serif;
+    margin-top: 1.3em;
+    margin-bottom: 0.7em;
+    line-height: 1.25;
+    break-after: avoid !important;
+    break-inside: avoid;
+    page-break-after: avoid !important;
+    page-break-inside: avoid;
+    color: #2e0854;
+}
+
+h1 {
+    font-size: 26pt;
+    font-weight: 700;
+    margin-top: 0;
+    padding-bottom: 9pt;
+    border-bottom: 2.5px solid #2e0854;
+    color: #2e0854;
+}
+
+h2 {
+    font-size: 22pt;
+    font-weight: 600;
+    break-before: auto;
+    border-bottom: 1px solid #b8860b;
+    padding-bottom: 6pt;
+    margin-top: 2em;
+}
+
+/* Force page breaks before major section headings for astrological reports */
+h2[id] {
+    break-before: page;
+    break-after: avoid;
+    page-break-before: always;
+    page-break-after: avoid;
+}
+
+h3 {
+    font-size: 18pt;
+    font-weight: 600;
+    margin-top: 1.7em;
+    border-bottom: 1px solid #e0d0ff;
+    padding-bottom: 4pt;
+}
+
+h4 {
+    font-size: 15pt;
+    font-weight: 600;
+    margin-top: 1.4em;
+}
+
+h5 {
+    font-size: 14pt;
+    font-weight: 600;
+}
+
+h6 {
+    font-size: 13pt;
+    font-weight: 600;
+    font-style: italic;
+}
+
+/* ====== PARAGRAPHS & TEXT ELEMENTS ====== */
+p {
+    margin: 0 0 1.0em 0;
+    orphans: 3;
+    widows: 3;
+}
+
+strong {
+    font-weight: 700;
+}
+
+em {
+    font-style: italic;
+}
+
+/* Astrological symbols and special characters */
+.astro-symbol {
+    font-family: 'Noto Sans Symbols', sans-serif;
+    font-size: 110%;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+/* Planet colors */
+.sun { color: #e6b800; }
+.moon { color: #c0c0c0; }
+.mercury { color: #9999ff; }
+.venus { color: #ff66cc; }
+.mars { color: #ff3300; }
+.jupiter { color: #996633; }
+.saturn { color: #666666; }
+.uranus { color: #00ccff; }
+.neptune { color: #3366ff; }
+.pluto { color: #660033; }
+
+/* ====== LISTS ====== */
+ul {
+    margin-left: 20px;
+    margin-bottom: 1em;
+    list-style-type: disc;
+}
+
+ol {
+    margin-left: 20px;
+    margin-bottom: 1em;
+    list-style-type: decimal;
+}
+
+li {
+    margin-bottom: 0.5em;
+    padding-left: 5px;
+}
+
+/* Nested lists styling */
+li ul, li ol {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+}
+
+/* ====== TABLES ====== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin: 1.5em 0;
+    table-layout: auto;
+    word-wrap: break-word;
+    font-size: 10pt;
+    font-family: 'Lato', 'Arial', 'Liberation Sans', sans-serif;
+}
+
+caption {
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 12pt;
+    color: #2e0854;
+    break-after: avoid;
+    page-break-after: avoid;
+}
+
+th, td {
+    border: 1.5px solid #d0c0e0;
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background-color: #f0e6ff;
+    font-weight: 700;
+    color: #2e0854;
+    border-bottom: 2.5px solid #2e0854;
+}
+
+/* Row styling */
+tr:nth-child(even) {
+    background-color: #f9f8fc;
+}
+
+/* Data columns alignment */
+.right-align, [align="right"], td[style*="text-align: right"] {
+    text-align: right;
+}
+
+.center-align, [align="center"], td[style*="text-align: center"] {
+    text-align: center;
+}
+
+/* ====== ASTROLOGICAL SPECIFIC TABLES ====== */
+/* Planet table styling */
+.planet-table th {
+    background-color: #f0e6ff;
+}
+
+.planet-table td {
+    vertical-align: middle;
+}
+
+/* Aspect grid - symmetrical table for aspects */
+.aspect-grid {
+    border-collapse: collapse;
+    font-size: 10pt;
+    table-layout: fixed;
+}
+
+.aspect-grid th, .aspect-grid td {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    vertical-align: middle;
+    padding: 2px;
+}
+
+/* Aspect types */
+.harmonious-aspect {
+    color: #007700;
+    font-weight: bold;
+}
+
+.challenging-aspect {
+    color: #cc0000;
+    font-weight: bold;
+}
+
+.neutral-aspect {
+    color: #0066cc;
+    font-weight: bold;
+}
+
+/* ====== IMAGES & FIGURES ====== */
+img {
+    max-width: 90%;
+    height: auto;
+    display: block;
+    margin: 1.5em auto;
+    border: 1px solid #d0c0e0;
+    padding: 5px;
+}
+
+figure {
+    display: block;
+    margin: 1.5em auto;
+    text-align: center;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    width: 100%;
+}
+
+figcaption {
+    display: block;
+    width: 100%;
+    font-size: 11pt;
+    color: #505050;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    font-style: italic;
+    text-align: justify;
+}
+
+/* ====== CHARTS & GRAPHS ====== */
+.chart-container, div[class*="chart"], div[id*="chart"] {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin: 1.5em 0;
+    border: 1px solid #d0c0e0;
+    padding: 10px;
+    background-color: #ffffff;
+}
+
+.chart-title, [class*="chart"] h4, [id*="chart"] h4 {
+    font-weight: 600;
+    font-size: 13pt;
+    color: #2e0854;
+    margin-bottom: 10px;
+    text-align: center;
+    break-after: avoid;
+    page-break-after: avoid;
+}
+
+.chart-legend, div[class*="legend"], div[id*="legend"] {
+    font-size: 10pt;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* ====== ASTROLOGICAL CHARTS & ELEMENTS ====== */
+/* Natal chart wheel container */
+.chart-wheel {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+}
+
+/* Element and modality distribution charts */
+.element-chart, .modality-chart {
+    width: 100%;
+    max-width: 400px;
+    margin: 1em auto;
+    display: block;
+}
+
+/* Interpretation box styling */
+.interpretation-box {
+    margin: 1.2em 0;
+    padding: 15px;
+    border-left: 4px solid #b8860b;
+    background-color: #fdfbf7;
+    break-before: avoid !important;
+    page-break-before: avoid !important;
+    border-radius: 3px;
+}
+
+/* Prediction timeline */
+.prediction-timeline {
+    margin: 2em 0;
+    padding: 15px;
+    background-color: #f9f8fc;
+    border: 1px solid #d0c0e0;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+}
+
+/* Retrograde periods */
+.retrograde-period {
+    font-style: italic;
+    color: #663399;
+    font-weight: 500;
+}
+
+/* Strength indicators */
+.strength-indicator {
+    display: inline-block;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.very-strong { color: #006600; }
+.strong { color: #009900; }
+.moderate { color: #999900; }
+.weak { color: #cc6600; }
+.very-weak { color: #cc0000; }
+
+/* ====== HYPERLINKS ====== */
+a {
+    color: #5522aa;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ====== BLOCKQUOTES ====== */
+blockquote {
+    margin: 1.2em 0;
+    padding: 10px 20px;
+    border-left: 4px solid #b8860b;
+    background-color: #f9f8fc;
+    font-style: italic;
+    color: #505050;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+}
+
+/* ====== HORIZONTAL RULE ====== */
+hr {
+    border: none;
+    height: 1px;
+    background-color: #d0c0e0;
+    margin: 2em 0;
+}
+
+/* Zodiac sign divider */
+hr.zodiac-divider {
+    border: none;
+    height: 2px;
+    background: linear-gradient(to right, #2e0854, #b8860b, #2e0854);
+    margin: 2em 0;
+}
+
+/* Disclaimer text styling */
+.disclaimer,
+div[class*="disclaimer"],
+div[class*="legal"],
+section[class*="disclaimer"] {
+    font-size: 9pt;
+    color: #666;
+    line-height: 1.3;
+    border: 1px solid #d0c0e0;
+    padding: 10px;
+    background-color: #f9f8fc;
+    margin-top: 2em;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+.astro-disclaimer {
+    font-size: 9pt;
+    font-style: italic;
+    color: #666;
+    line-height: 1.3;
+    margin-top: 2em;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+
+/* === Enhanced Section Breaks === */
+.section-break {
+    border: none;
+    border-top: 2px dashed #d0c0e0;
+    margin: 2.5em 0;
+}
+
+/* === h3 refinement === */
+h3 {
+    font-size: 18pt;
+    font-weight: 600;
+    color: #4b0082;
+    border-bottom: 1px dashed #b8860b;
+    padding-bottom: 4px;
+    margin-top: 2em;
+    margin-bottom: 0.7em;
+}
+
+/* === Retrograde Periods Emphasis === */
+.retrograde-period {
+    font-style: italic;
+    color: #663399;
+    font-weight: 600;
+}
+
+/* === Strength Indicators (inline spans) === */
+.very-strong { color: #006600; font-weight: bold; }
+.strong { color: #009900; font-weight: bold; }
+.moderate { color: #999900; font-weight: bold; }
+
+/* === Interpretation Box Enhancement === */
+.interpretation-box {
+    border-left: 6px solid #b8860b;
+    background-color: #fcf8f2;
+    padding: 18px;
+    margin: 1.5em 0;
+    border-radius: 6px;
+    break-before: avoid !important;
+    page-break-before: avoid !important;
+    /* break-inside: avoid !important;
+    page-break-inside: avoid !important; */
+}
+
+/* === Glossary Definition Layout === */
+.definition-term {
+    font-weight: bold;
+    color: #2e0854;
+    font-size: 13pt;
+    margin-top: 1em;
+}
+
+.definition-desc {
+    margin-bottom: 1em;
+    padding-left: 10px;
+    font-style: italic;
+    color: #333333;
+}
+
+/* ====== PRINT OPTIMIZATION ====== */
+@media print {
+    /* Ensure page breaks don't occur in awkward places */
+    p, h2, h3, h4, h5, h6 {
+        orphans: 3;
+        widows: 3;
+    }
+    
+    /* Re-apply break controls specifically for print */
+    h1, h2, h3, h4, h5, h6 {
+        break-after: avoid;
+        page-break-after: avoid;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    table, figure, blockquote, .chart-container, .chart-wheel, .prediction-timeline, .disclaimer {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        break-before: avoid !important;
+        page-break-before: avoid !important;
+    }
+
+    /* Force page breaks before major astrological sections */
+    h2[id] {
+        break-before: page;
+        page-break-before: page;
+    }
+    
+    /* Black and white friendly elements for print */
+    th {
+        background-color: #f0f0f0 !important;
+        border-bottom: 2px solid #000000 !important;
+        color: #000000 !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        color: #000000 !important;
+    }
+    
+    /* Ensure aspect colors are visible in b&w */
+    .harmonious-aspect { 
+        color: #000000 !important;
+        text-decoration: underline;
+    }
+    
+    .challenging-aspect {
+        color: #000000 !important;
+        font-weight: bold;
+    }
+}
+
+/* ====== ZODIAC SIGNS (Unified Style) ====== */
+.sign-aries,
+.sign-taurus,
+.sign-gemini,
+.sign-cancer,
+.sign-leo,
+.sign-virgo,
+.sign-libra,
+.sign-scorpio,
+.sign-sagittarius,
+.sign-capricorn,
+.sign-aquarius,
+.sign-pisces {
+  color: #181917;
+  font-weight: bold;
+}
+
+
+/* ====== ASPECT SYMBOLS ====== */
+.aspect-conjunction { color: #000000; font-weight: bold; }
+.aspect-opposition { color: #cc0000; font-weight: bold; }
+.aspect-square { color: #cc6600; font-weight: bold; }
+.aspect-trine { color: #009900; font-weight: bold; }
+.aspect-quincunx { color: #666666; font-style: italic; }

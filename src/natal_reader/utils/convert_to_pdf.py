@@ -16,6 +16,6 @@ def convert_md_to_pdf(md_file_path: Path) -> Path:
 
 
 if __name__ == "__main__":
-    md = '/home/j/ai/crewAI/astro/transit_reader_II/transit_reader/outputs/2025-04-18/Benjamin_Jasper_2025-04-18_20-58-23.md'
+    md = '/home/j/ai/crewAI/astro/natal_reader/natal_reader/outputs/2025-04-23/Mary_Jasper_20250423_193810.md'
     pdf = convert_md_to_pdf(md)
     print(f"PDF file saved to {pdf}")

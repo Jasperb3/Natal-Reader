@@ -24,6 +24,7 @@ class NatalState(BaseModel):
     final_natal_analysis: str = ""
     report_markdown: str = ""
     report_pdf: str = ""
+    total_token_usage: int = 0
 
 
 class Email(BaseModel):

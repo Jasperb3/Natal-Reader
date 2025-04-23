@@ -23,6 +23,20 @@ gpt41mini = LLM(
 	temperature=0.7
 )
 
+gemini_flash = LLM(
+	model="gemini/gemini-2.5-flash-preview-04-17",
+	api_key = os.getenv("GEMINI_API_KEY"),
+	temperature=0.7,
+	timeout=600
+)
+
+deepseek = LLM(
+	model="deepseek/deepseek-reasoner",
+	api_key = os.getenv("DEEPSEEK_API_KEY"),
+	temperature=0.7,
+	timeout=600
+)
+
 @CrewBase
 class ReviewCrew():
 	"""ReviewCrew crew"""
@@ -36,7 +50,7 @@ class ReviewCrew():
 	def critic(self) -> Agent:
 		return Agent(
 			config=self.agents_config['critic'],
-			llm=gpt41,
+			llm=deepseek,
 			verbose=True
 		)
 
@@ -44,8 +58,16 @@ class ReviewCrew():
 	def report_enhancer(self) -> Agent:
 		return Agent(
 			config=self.agents_config['report_enhancer'],
-			llm=gpt41,
+			llm=gemini_flash,
 			tools=[google_search_tool, GeminiSearchTool(), QdrantSearchTool()],
+			verbose=True
+		)
+
+	@agent
+	def markdown_enhancer(self) -> Agent:
+		return Agent(
+			config=self.agents_config['markdown_enhancer'],
+			llm=gpt41mini,
 			verbose=True
 		)
 
@@ -57,9 +79,17 @@ class ReviewCrew():
 		)
 
 	@task
-	def enhance_task(self) -> Task:
+	def report_enhancement_task(self) -> Task:
 		return Task(
-			config=self.tasks_config['enhance_task']
+			config=self.tasks_config['report_enhancement_task'],
+			output_file=f"crew_outputs/{TIMESTAMP}/enhanced_report.md"
+		)
+
+	@task
+	def markdown_enhancement_task(self) -> Task:
+		return Task(
+			config=self.tasks_config['markdown_enhancement_task'],
+			output_file=f"crew_outputs/{TIMESTAMP}/tagged_markdown.md"
 		)
 
 	@crew

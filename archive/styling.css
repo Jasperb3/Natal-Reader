@@ -3,10 +3,9 @@
 
 /* 
  * ASTROLOGICAL REPORT STYLESHEET
- * Optimized for retail investor astrological reports
+ * Optimized for astrological reports
  * Focus on readability, professionalism, and clear data presentation
  * Compatible with WeasyPrint PDF renderer
- * Font sizes increased for better readability on various screen sizes (trade-off: less density)
  */
 
 /* ====== PAGE LAYOUT ====== */
@@ -16,39 +15,39 @@
     @top-center {
         content: string(doctitle);
         font-family: 'Lato', 'Arial', sans-serif; /* Sans-serif for headers */
-        font-size: 9.5pt; /* Slightly larger */
-        color: #505050; /* Muted dark gray instead of black */
+        font-size: 9.5pt;
+        color: #505050;
     }
     @bottom-right {
-        content: "Page " counter(page); /* Added "Page" text for clarity */
+        content: "Page " counter(page);
         font-family: 'Lato', 'Arial', sans-serif;
-        font-size: 9.5pt; /* Slightly larger */
+        font-size: 9.5pt;
         color: #505050;
     }
     @bottom-left {
-        content: "Confidential – For the intended recipient only"; /* Added footer note */
+        content: "Confidential – For the intended recipient only";
         font-family: 'Lato', 'Arial', sans-serif;
-        font-size: 8.5pt; /* Slightly larger */
+        font-size: 8.5pt;
         color: #808080;
     }
 }
 
 /* First page styling (cover page) */
 @page :first {
-    margin: 35mm 20mm 25mm 20mm; /* Larger top margin */
+    margin: 35mm 20mm 25mm 20mm;
     @top-center { 
         content: none; 
     }
     @bottom-left {
         content: "Confidential - For the intended recipient only";
         font-family: 'Lato', 'Arial', sans-serif;
-        font-size: 8.5pt; /* Slightly larger */
+        font-size: 8.5pt;
         color: #808080;
     }
     @bottom-right {
         content: "Page " counter(page);
         font-family: 'Lato', 'Arial', sans-serif;
-        font-size: 9.5pt; /* Slightly larger */
+        font-size: 9.5pt;
         color: #505050;
     }
 }
@@ -60,12 +59,12 @@
  */
 body {
     font-family: 'STIX Two Text', 'Lora', Georgia, 'Times New Roman', Times, serif;
-    font-size: 12pt; /* Increased base font size */
-    line-height: 1.55; /* Adjusted line height */
-    text-align: left; /* Left-aligned text is easier to read than justified */
-    color: #333333; /* Dark gray instead of black for reduced eye strain */
+    font-size: 14pt;
+    line-height: 1.55;
+    text-align: left;
+    color: #333333;
     max-width: 100%;
-    hyphens: auto; /* Enable hyphenation for better text flow */
+    hyphens: auto;
 }
 
 /* Store document title for headers */
@@ -77,32 +76,32 @@ h1 {
 /* Clear visual hierarchy with consistent color scheme */
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Atkinson Hyperlegible', 'Arial', 'Liberation Sans', sans-serif;
-    margin-top: 1.3em; /* Adjusted spacing */
-    margin-bottom: 0.7em; /* Adjusted spacing */
+    margin-top: 1.3em;
+    margin-bottom: 0.7em;
     line-height: 1.25;
-    break-after: avoid; /* Prevent page breaks immediately after headings */
-    break-inside: avoid; /* Prevent breaks within headings */
-    page-break-after: avoid; /* Alias for older renderers */
-    page-break-inside: avoid; /* Alias */
-    color: #103a63; /* Navy blue for professional financial look */
+    break-after: avoid;
+    break-inside: avoid;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    color: #103a63;
 }
 
 h1 {
-    font-size: 24pt; /* Increased */
+    font-size: 24pt;
     font-weight: 700;
-    margin-top: 0; /* No margin at top of page */
+    margin-top: 0;
     padding-bottom: 9pt;
-    border-bottom: 2.5px solid #103a63; /* Slightly thicker */
+    border-bottom: 2.5px solid #103a63;
     color: #103a63;
 }
 
 h2 {
-    font-size: 20pt; /* Increased */
+    font-size: 20pt;
     font-weight: 600;
-    break-before: auto; /* Default: no page break before h2 */
-    border-bottom: 1px solid #dddddd; /* Subtle underline */
+    break-before: auto;
+    border-bottom: 1px solid #dddddd;
     padding-bottom: 6pt;
-    margin-top: 2em; /* Increased space before new sections */
+    margin-top: 2em;
 }
 
 /* Force page breaks before major section headings */
@@ -120,39 +119,39 @@ h2[id="conclusion"] {
 }
 
 h3 {
-    font-size: 17pt; /* Increased */
+    font-size: 17pt;
     font-weight: 600;
-    margin-top: 1.7em; /* Adjusted */
+    margin-top: 1.7em;
     border-bottom: 1px solid #eeeeee;
     padding-bottom: 4pt;
 }
 
 h4 {
-    font-size: 14pt; /* Increased */
+    font-size: 14pt;
     font-weight: 600;
-    margin-top: 1.4em; /* Adjusted */
+    margin-top: 1.4em;
 }
 
 h5 {
-    font-size: 13pt; /* Increased */
+    font-size: 13pt;
     font-weight: 600;
 }
 
 h6 {
-    font-size: 12pt; /* Increased */
+    font-size: 12pt;
     font-weight: 600;
     font-style: italic;
 }
 
 /* ====== PARAGRAPHS & TEXT ELEMENTS ====== */
 p {
-    margin: 0 0 1.0em 0; /* Adjusted margin */
-    orphans: 3; /* Minimum lines at bottom of page */
-    widows: 3; /* Minimum lines at top of page */
+    margin: 0 0 1.0em 0;
+    orphans: 3;
+    widows: 3;
 }
 
 strong {
-    font-weight: 700; /* Bolder for better contrast */
+    font-weight: 700;
 }
 
 em {
@@ -160,29 +159,29 @@ em {
 }
 
 code {
-    font-family: 'Consolas', 'Monaco', monospace; /* Better monospace fonts */
+    font-family: 'Consolas', 'Monaco', monospace; /* Monospace fonts */
     background-color: #f5f5f5;
     padding: 2px 4px;
     border-radius: 3px;
-    font-size: 10pt; /* Increased */
+    font-size: 10pt;
 }
 
 /* ====== LISTS ====== */
 ul {
-    margin-left: 20px; /* Increased indent for better hierarchy */
+    margin-left: 20px;
     margin-bottom: 1em;
-    list-style-type: disc; /* Explicit disc style */
+    list-style-type: disc;
 }
 
 ol {
     margin-left: 20px;
     margin-bottom: 1em;
-    list-style-type: decimal; /* Decimal for better readability */
+    list-style-type: decimal;
 }
 
 li {
-    margin-bottom: 0.5em; /* Spacing between list items */
-    padding-left: 5px; /* Add some padding after the bullet */
+    margin-bottom: 0.5em;
+    padding-left: 5px;
 }
 
 /* Nested lists styling */
@@ -195,35 +194,35 @@ li ul, li ol {
 table {
     width: 100%;
     border-collapse: collapse;
-    break-inside: avoid !important; /* STRONGLY prevent breaking tables */
-    page-break-inside: avoid !important; /* Alias */
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
     margin: 1.5em 0;
-    table-layout: auto; /* Changed from 'fixed' to 'auto' */
+    table-layout: auto;
     word-wrap: break-word;
-    font-size: 9.5pt; /* Increased */
-    font-family: 'Lato', 'Arial', 'Liberation Sans', sans-serif; /* Sans-serif for data */
+    font-size: 9.5pt;
+    font-family: 'Lato', 'Arial', 'Liberation Sans', sans-serif;
 }
 
 caption {
     font-weight: 600;
     margin-bottom: 10px;
     text-align: left;
-    font-size: 11pt; /* Increased */
+    font-size: 11pt;
     color: #103a63;
-    break-after: avoid; /* Avoid break between caption and table */
-    page-break-after: avoid; /* Alias */
+    break-after: avoid;
+    page-break-after: avoid;
 }
 
 th, td {
     border: 1.5px solid #bbb;
-    padding: 10px 12px; /* Increased vertical padding */
+    padding: 10px 12px;
     text-align: left;
     vertical-align: top;
 }
 
 th {
     background-color: #dde6ef;
-    font-weight: 700;       /* Bolder header */
+    font-weight: 700;
     color: #103a63;
     border-bottom: 2.5px solid #103a63;
 }
@@ -242,26 +241,13 @@ tr:nth-child(even) {
     text-align: center;
 }
 
-/* Table with colored indicators */
-.metrics-table .positive, td[data-trend="positive"], .positive {
-    color: #1a8754; /* Green for positive values */
-}
-
-.metrics-table .negative, td[data-trend="negative"], .negative {
-    color: #dc3545; /* Red for negative values */
-}
-
-.metrics-table .neutral, td[data-trend="neutral"], .neutral {
-    color: #6c757d; /* Gray for neutral values */
-}
-
 /* ====== IMAGES & FIGURES ====== */
 img {
     max-width: 90%;
     height: auto;
     display: block;
     margin: 1.5em auto;
-    border: 1px solid #e0e0e0; /* Lighter border */
+    border: 1px solid #e0e0e0;
     padding: 5px;
 }
 
@@ -269,28 +255,27 @@ figure {
     display: block;
     margin: 1.5em auto;
     text-align: center;
-    break-inside: avoid !important; /* STRONGLY prevent breaking figures */
-    page-break-inside: avoid !important; /* Alias */
-    width: 100%; /* Full width */
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    width: 100%;
 }
 
-/* Fixed figcaption to spread across page width */
 figcaption {
     display: block;
-    width: 100%; /* Ensure it spans full width */
-    font-size: 10pt; /* Increased */
+    width: 100%;
+    font-size: 10pt;
     color: #505050;
     margin-top: 8px;
     margin-bottom: 8px;
     line-height: 1.3;
     font-style: italic;
-    text-align: justify; /* Justify the caption */
+    text-align: justify;
 }
 
 /* ====== CHARTS & GRAPHS ====== */
 .chart-container, div[class*="chart"], div[id*="chart"] {
-    break-inside: avoid !important; /* STRONGLY prevent breaking charts */
-    page-break-inside: avoid !important; /* Alias */
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
     margin: 1.5em 0;
     border: 1px solid #e0e0e0;
     padding: 10px;
@@ -299,16 +284,16 @@ figcaption {
 
 .chart-title, [class*="chart"] h4, [id*="chart"] h4 {
     font-weight: 600;
-    font-size: 12pt; /* Increased */
+    font-size: 12pt;
     color: #103a63;
     margin-bottom: 10px;
     text-align: center;
-    break-after: avoid; /* Keep title with chart */
-    page-break-after: avoid; /* Alias */
+    break-after: avoid;
+    page-break-after: avoid;
 }
 
 .chart-legend, div[class*="legend"], div[id*="legend"] {
-    font-size: 10pt; /* Increased */
+    font-size: 10pt;
     margin-top: 10px;
     text-align: center;
 }
@@ -327,42 +312,41 @@ a:hover {
 blockquote {
     margin: 1.2em 0;
     padding: 10px 20px;
-    border-left: 4px solid #103a63; /* Match header color */
-    background-color: #f8f9fa; /* Light gray background */
+    border-left: 4px solid #103a63;
+    background-color: #f8f9fa;
     font-style: italic;
     color: #505050;
-    break-inside: avoid !important; /* STRONGLY prevent breaking blockquotes */
-    page-break-inside: avoid !important; /* Alias */
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
 }
 
 /* ====== HORIZONTAL RULE ====== */
 hr {
     border: none;
     height: 1px;
-    background-color: #dddddd; /* Lighter color */
+    background-color: #dddddd;
     margin: 2em 0;
 }
 
 
-/* Disclaimer and legal text styling */
+/* Disclaimer text styling */
 .disclaimer,
 div[class*="disclaimer"],
 div[class*="legal"],
 section[class*="disclaimer"] {
-    font-size: 9pt; /* Increased */
+    font-size: 9pt;
     color: #666;
     line-height: 1.3;
     border: 1px solid #ddd;
     padding: 10px;
     background-color: #f9f9f9;
     margin-top: 2em;
-    break-inside: avoid; /* Avoid breaks in disclaimers */
+    break-inside: avoid;
     page-break-inside: avoid;
 }
 
 /* Specific styling for the disclaimer paragraph */
 p:last-child {
-    /* Removed margin-top: 2em; as it could conflict with .final-disclaimer */
 }
 
 
@@ -406,7 +390,7 @@ p:last-child {
     
     /* Black and white friendly elements */
     th {
-        background-color: #f0f0f0 !important; /* Lighter gray for B&W printing */
+        background-color: #f0f0f0 !important;
         border-bottom: 2px solid #000000 !important;
         color: #000000 !important;
     }
@@ -414,36 +398,4 @@ p:last-child {
     h1, h2, h3, h4, h5, h6 {
         color: #000000 !important;
     }
-    
-    .risk-high, .sell, [data-risk="high"], [data-recommendation="sell"] {
-        color: #000000 !important;
-        font-weight: 900 !important; /* Bolder for emphasis in B&W */
-    }
-    
-    .risk-medium, .hold, [data-risk="medium"], [data-recommendation="hold"] {
-        color: #000000 !important;
-        font-weight: 700 !important;
-    }
-    
-    .risk-low, .buy, .positive, [data-risk="low"], [data-recommendation="buy"] {
-        color: #000000 !important;
-        font-weight: 700 !important;
-    }
-    
-    .negative, td[data-trend="negative"] {
-        color: #000000 !important;
-        font-weight: 900 !important;
-    }
-}
-
-/* ====== DISCLAIMER STYLING (END OF REPORT) ====== */
-.final-disclaimer {
-    break-before: avoid !important; /* STRONGLY prevents page break before */
-    page-break-before: avoid !important; /* Alias */
-    font-size: 9pt;        /* Increased slightly */
-    color: #888;       /* Lighter gray */
-    text-align: center;    /* Centered text */
-    border-top: 1px solid #dddddd; /* Separator line */
-    padding-top: 10px;     /* Space between line and text */
-    margin-top: 2em;      /* Space after last content */
 }
