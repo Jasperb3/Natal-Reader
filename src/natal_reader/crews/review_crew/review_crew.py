@@ -4,6 +4,7 @@ from crewai.project import CrewBase, agent, crew, task
 from natal_reader.tools.google_search_tool import GoogleSearchTool
 from natal_reader.tools.gemini_search_tool import GeminiSearchTool
 from natal_reader.tools.qdrant_search_tool import QdrantSearchTool
+from natal_reader.tools.linkup_search_tool import LinkUpSearchTool
 from natal_reader.utils.constants import TIMESTAMP
 from dotenv import load_dotenv
 
@@ -59,7 +60,7 @@ class ReviewCrew():
 		return Agent(
 			config=self.agents_config['report_enhancer'],
 			llm=gemini_flash,
-			tools=[google_search_tool, GeminiSearchTool(), QdrantSearchTool()],
+			tools=[google_search_tool, GeminiSearchTool(), QdrantSearchTool(), LinkUpSearchTool()],
 			verbose=True
 		)
 

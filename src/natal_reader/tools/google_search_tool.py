@@ -1,6 +1,6 @@
 import os
 import requests
-import google.generativeai as genai
+from google import genai
 from typing import Type, List, Dict, Any
 from urllib.parse import quote_plus
 from crewai.tools import BaseTool
@@ -42,9 +42,11 @@ class GoogleSearchTool(BaseTool):
             A string containing the generated summary, or an error message.
         """
         # Configure the generative AI model
-        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
-        model = genai.GenerativeModel('gemini-2.0-flash-lite')
+        model = 'gemini-2.0-flash-lite'
+
+
 
         # Optimized Prompt
         # This prompt is designed to be clear, specific, and provides options for customization.
@@ -68,7 +70,7 @@ class GoogleSearchTool(BaseTool):
 
         try:
             # Generate the content using the model
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(model=model, contents=prompt)
 
             # Return the summarized text
             return response.text
@@ -131,7 +133,7 @@ if __name__ == "__main__":
     search_tool = GoogleSearchTool(api_key=api_key, cx=cx)
     
     # Test search query
-    test_query = "the complete works of shakespeare"
+    test_query = "the Snooker World Championships 2025"
     
     # Execute the search
     results = search_tool._run(

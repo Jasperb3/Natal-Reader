@@ -2,7 +2,6 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 import os
-from pathlib import Path
 from contextlib import contextmanager
 from datetime import datetime
 

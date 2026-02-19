@@ -5,22 +5,22 @@ description = "natal_reader using crewAI"
 authors = [{ name = "Benjamin Jasper", email = "ben.j.jasper@gmail.com" }]
 requires-python = ">=3.12.9,<3.13"
 dependencies = [
-    "crewai[tools]>=0.114.0,<1.0.0",
+    "crewai[tools]>=0.119.0,<1.0.0",
     "html2text",
-    "python-dotenv>=1.0.1",
+    "python-dotenv>=1.1.0",
     "trafilatura>=2.0.0",
-    "google-auth-oauthlib>=1.2.1",
-    "google-generativeai>=0.8.5",
-    "google-genai>=1.2.0",
-    "botocore>=1.36.21",
+    "google-auth-oauthlib>=1.2.2",
+    "google-genai>=1.13.0",
+    "botocore>=1.38.3",
     "markdown>=3.7",
-    "immanuel>=1.4.4",
-    "kerykeion==4.26.0",
+    "immanuel>=1.5.0",
+    "kerykeion==4.26.2",
     "weasyprint>=65.1",
     "boto3>=1.37.36",
     "md2pdf>=1.0.1",
-    "selenium>=4.31.0",
+    "selenium>=4.32.0",
     "googlemaps>=4.10.0",
+    "linkup-sdk>=0.2.4",
 ]
 
 [project.scripts]

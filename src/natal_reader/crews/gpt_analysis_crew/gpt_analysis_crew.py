@@ -4,6 +4,7 @@ from crewai.project import CrewBase, agent, crew, task
 from natal_reader.tools.google_search_tool import GoogleSearchTool
 from natal_reader.tools.gemini_search_tool import GeminiSearchTool
 from natal_reader.tools.qdrant_search_tool import QdrantSearchTool
+from natal_reader.tools.linkup_search_tool import LinkUpSearchTool
 from natal_reader.utils.constants import TIMESTAMP
 from dotenv import load_dotenv
 
@@ -43,7 +44,7 @@ class GPTAnalysisCrew():
 	def natal_chart_interpreter(self) -> Agent:
 		return Agent(
 			config=self.agents_config['natal_chart_interpreter'],
-			tools=[google_search_tool, GeminiSearchTool(), QdrantSearchTool()],
+			tools=[google_search_tool, GeminiSearchTool(), QdrantSearchTool(), LinkUpSearchTool()],
 			llm=gpt41,
 			verbose=True
 		)
@@ -52,7 +53,7 @@ class GPTAnalysisCrew():
 	def natal_report_writer(self) -> Agent:
 		return Agent(
 			config=self.agents_config['natal_report_writer'],
-			tools=[google_search_tool, GeminiSearchTool(), QdrantSearchTool()],
+			tools=[google_search_tool, GeminiSearchTool(), QdrantSearchTool(), LinkUpSearchTool()],
 			llm=gpt41,
 			verbose=True
 		)

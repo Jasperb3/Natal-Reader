@@ -1,5 +1,4 @@
 from datetime import datetime
-import json
 from pathlib import Path
 
 NOW_DT: datetime = datetime.now()

@@ -50,6 +50,19 @@ natal_report_writing_task:
     6. Conclusion: A brief, encouraging summary.
     7. Glossary: Define all key astrological terms used in the report (e.g., Aspect, Sign, House, Retrograde, Dignity, elements, modalities, planet names).
 
+    Requirements:
+    - Markdown (no code blocks)
+    - Emotionally intelligent, symbolically coherent, and supportive tone
+    - Modular, consistently formatted structure
+    - Prioritize psychological flow, narrative engagement, and client-centered voice
+    - Thematic Integrity First: Prioritize cohesive psychological themes over isolated traits.
+    - Emotional Validation and Empowerment: Affirm both strengths and struggles.
+    - Symbolic and Psychological Precision: Use archetypal clarity; avoid deterministic labels.
+    - Concrete without Over-Interpreting: Tie all analysis strictly to provided data.
+    - Cohesive Narrative Weaving: Connect all sections to the evolving life story.
+    - Use Vivid Yet Grounded Metaphors: Illustrate insights without speculation.
+    - Client-Centered Focus: Write growth-oriented, empowering insights tailored to the individual.
+
   expected_output: >
     A complete, well-structured, and elegantly written natal report narrative. The report must be:
     * Reader-Focused: Written directly to the individual in a warm, accessible, and empowering tone.
