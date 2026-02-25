@@ -66,5 +66,6 @@ def get_kerykeion_natal_chart(subject: AstrologicalSubject, output_directory: st
 
 if __name__ == "__main__":
     test_dir = "tests"
-    subject = get_kerykeion_subject("John Doe", 1990, 1, 1, 0, 0, "New York", "United States", -74.006, 40.7128, "CET")
+    subject = get_kerykeion_subject("John Doe", 1990, 1, 1, 0, 0, "New York", "United States", -74.006, 40.7128, "America/New_York")
     get_kerykeion_natal_chart(subject, test_dir)
+

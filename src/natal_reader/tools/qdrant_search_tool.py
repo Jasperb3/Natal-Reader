@@ -25,7 +25,7 @@ class QdrantSearchToolSchema(BaseModel):
 
     query: str = Field(
         ...,
-        description="The word or phrase to search for in the astrology reference docs. Must be a single string to match on similarity.",
+        description="The word or phrase to search for in the astrology reference docs. Use SHORT, technical astrological terms ONLY to match on similarity.",
     )
     # filter_by: Optional[str] = Field(
     #     default=None,
@@ -52,9 +52,9 @@ class QdrantSearchTool(BaseTool):
     collection_name: str = Field(
         default=os.environ.get("QDRANT_COLLECTION_NAME"), description="Name of the Qdrant collection to search."
     )
-    limit: int = Field(default=5, description="Maximum number of results to return.")
+    limit: int = Field(default=8, description="Maximum number of results to return.")
     score_threshold: float = Field(
-        default=0.2, description="Minimum similarity score threshold."
+        default=0.3, description="Minimum similarity score threshold."
     )
     qdrant_url: Optional[str] = Field(
         default=None, description="The URL of the Qdrant server."

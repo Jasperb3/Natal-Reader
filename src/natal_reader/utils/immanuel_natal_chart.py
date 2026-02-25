@@ -6,27 +6,27 @@ from immanuel.classes.serialize import ToJSON
 from datetime import datetime
 
 
-settings.objects.append(chart.PHOLUS)
-settings.objects.append(chart.CERES)
-settings.objects.append(chart.PALLAS)
-settings.objects.append(chart.JUNO)
-settings.objects.append(chart.VESTA)
-settings.objects.append(chart.NORTH_NODE)
-settings.objects.append(chart.SOUTH_NODE)
+# settings.objects.append(chart.PHOLUS)
+# settings.objects.append(chart.CERES)
+# settings.objects.append(chart.PALLAS)
+# settings.objects.append(chart.JUNO)
+# settings.objects.append(chart.VESTA)
+# settings.objects.append(chart.NORTH_NODE)
+# settings.objects.append(chart.SOUTH_NODE)
 settings.objects.append(chart.TRUE_NORTH_NODE)
 settings.objects.append(chart.TRUE_SOUTH_NODE)
-settings.objects.append(chart.VERTEX)
+# settings.objects.append(chart.VERTEX)
 settings.objects.append(chart.LILITH)
-settings.objects.append(chart.TRUE_LILITH)
-settings.objects.append(chart.INTERPOLATED_LILITH)
-settings.objects.append(chart.SYZYGY)
-settings.objects.append(chart.PART_OF_FORTUNE)
-settings.objects.append(chart.PART_OF_SPIRIT)
-settings.objects.append(chart.PART_OF_EROS)
-settings.objects.append(chart.PRE_NATAL_SOLAR_ECLIPSE)
-settings.objects.append(chart.PRE_NATAL_LUNAR_ECLIPSE)
-settings.objects.append(chart.POST_NATAL_SOLAR_ECLIPSE)
-settings.objects.append(chart.POST_NATAL_LUNAR_ECLIPSE)
+# settings.objects.append(chart.TRUE_LILITH)
+# settings.objects.append(chart.INTERPOLATED_LILITH)
+# settings.objects.append(chart.SYZYGY)
+# settings.objects.append(chart.PART_OF_FORTUNE)
+# settings.objects.append(chart.PART_OF_SPIRIT)
+# settings.objects.append(chart.PART_OF_EROS)
+# settings.objects.append(chart.PRE_NATAL_SOLAR_ECLIPSE)
+# settings.objects.append(chart.PRE_NATAL_LUNAR_ECLIPSE)
+# settings.objects.append(chart.POST_NATAL_SOLAR_ECLIPSE)
+# settings.objects.append(chart.POST_NATAL_LUNAR_ECLIPSE)
 
 
 def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
@@ -68,12 +68,11 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
     angles = {k: v for k, v in chart_data['objects'].items() if v['type']['name'] == 'Angle'}
     others = {k: v for k, v in chart_data['objects'].items() if v['type']['name'] != 'Angle'}
     
-    # Define a rough order for display
+    # Define a rough order for display (mirrors kerykeion chart objects)
     display_order = [
-        'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 
-        'Uranus', 'Neptune', 'Pluto', 'Chiron', 'True North Node', 
-        'True South Node', 'Asc', 'MC', 'IC', 'Desc', 'Part of Fortune', 
-        'Vertex', 'True Lilith' # Add others as needed
+        'Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn',
+        'Uranus', 'Neptune', 'Pluto', 'Chiron', 'True North Node',
+        'True South Node', 'Lilith', 'Asc', 'MC', 'IC', 'Desc'
     ]
     
     # Create a map for lookup
@@ -146,15 +145,6 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
             dignities_str = ", ".join(obj['dignities']['formatted'])
             output_lines.append(f"  Dignities/Debilities: {dignities_str}")
             
-        # Specific info for eclipses
-        if obj_type == 'Eclipse':
-             eclipse_type_info = obj.get('eclipse_type', {})
-             eclipse_fmt = eclipse_type_info.get('formatted', 'N/A')
-             eclipse_date_info = obj.get('date_time', {})
-             eclipse_date = eclipse_date_info.get('datetime', 'N/A')
-             output_lines.append(f"  Eclipse Type: {eclipse_fmt}")
-             output_lines.append(f"  Eclipse Date: {eclipse_date}")
-
 
     output_lines.append("-" * 25) # Separator
 
@@ -259,12 +249,153 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
          output_lines.append(f"  {quad_name}: {len(obj_list)} objects")
 
     output_lines.append("-" * 25) # Separator
+
+    # --- 7. Pre-computed Patterns ---
+    output_lines.append("--- Pre-computed Patterns ---")
+
+    # Helper: Traditional rulerships
+    sign_rulers = {
+        'Aries': 'Mars', 'Taurus': 'Venus', 'Gemini': 'Mercury',
+        'Cancer': 'Moon', 'Leo': 'Sun', 'Virgo': 'Mercury',
+        'Libra': 'Venus', 'Scorpio': 'Mars', 'Sagittarius': 'Jupiter',
+        'Capricorn': 'Saturn', 'Aquarius': 'Saturn', 'Pisces': 'Jupiter'
+    }
+
+    # Chart Ruler Identification
+    asc_obj = obj_by_name.get('Asc')
+    if asc_obj:
+        asc_sign = asc_obj.get('sign', {}).get('name', 'Unknown')
+        chart_ruler_name = sign_rulers.get(asc_sign, 'Unknown')
+        chart_ruler_obj = obj_by_name.get(chart_ruler_name)
+
+        if chart_ruler_obj:
+            ruler_sign = chart_ruler_obj.get('sign', {}).get('name', 'N/A')
+            ruler_house = chart_ruler_obj.get('house', {}).get('name', 'N/A')
+            ruler_dignities = chart_ruler_obj.get('dignities', {}).get('formatted', [])
+            ruler_dignities_str = ", ".join(ruler_dignities) if ruler_dignities else "None"
+            ruler_sect = "In Sect" if chart_ruler_obj.get('in_sect', False) else "Out of Sect"
+
+            output_lines.append(f"\nChart Ruler: {chart_ruler_name} (ruler of {asc_sign} Ascendant)")
+            output_lines.append(f"  Placed in: {ruler_sign} in {ruler_house}")
+            output_lines.append(f"  Dignities: {ruler_dignities_str}")
+            output_lines.append(f"  Sect Status: {ruler_sect}")
+
+    # Stellium Detection (3+ planets in same sign or house)
+    # Only count actual planets, exclude angles and points
+    planet_names = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter',
+                   'Saturn', 'Uranus', 'Neptune', 'Pluto']
+    planets = [obj for obj in sorted_objects if obj.get('name') in planet_names]
+
+    # Group by sign
+    sign_groups = {}
+    for planet in planets:
+        sign = planet.get('sign', {}).get('name', 'Unknown')
+        if sign not in sign_groups:
+            sign_groups[sign] = []
+        sign_groups[sign].append(planet.get('name'))
+
+    # Group by house
+    house_groups = {}
+    for planet in planets:
+        house = planet.get('house', {}).get('name', 'Unknown')
+        if house not in house_groups:
+            house_groups[house] = []
+        house_groups[house].append(planet.get('name'))
+
+    stelliums_found = []
+    for sign, planet_list in sign_groups.items():
+        if len(planet_list) >= 3:
+            stelliums_found.append(f"{sign} ({', '.join(planet_list)})")
+
+    for house, planet_list in house_groups.items():
+        if len(planet_list) >= 3:
+            # Only add if not already covered by sign stellium
+            planets_str = ', '.join(planet_list)
+            if f"({planets_str})" not in str(stelliums_found):
+                stelliums_found.append(f"{house} ({planets_str})")
+
+    output_lines.append(f"\nStelliums Detected: {len(stelliums_found)}")
+    if stelliums_found:
+        for stellium in stelliums_found:
+            output_lines.append(f"  - {stellium}")
+    else:
+        output_lines.append("  None")
+
+    # Hemisphere Balance
+    eastern_houses = ['1st House', '2nd House', '3rd House', '10th House', '11th House', '12th House']
+    western_houses = ['4th House', '5th House', '6th House', '7th House', '8th House', '9th House']
+    northern_houses = ['1st House', '2nd House', '3rd House', '4th House', '5th House', '6th House']
+    southern_houses = ['7th House', '8th House', '9th House', '10th House', '11th House', '12th House']
+
+    east_count = sum(1 for p in planets if p.get('house', {}).get('name') in eastern_houses)
+    west_count = sum(1 for p in planets if p.get('house', {}).get('name') in western_houses)
+    north_count = sum(1 for p in planets if p.get('house', {}).get('name') in northern_houses)
+    south_count = sum(1 for p in planets if p.get('house', {}).get('name') in southern_houses)
+
+    output_lines.append("\nHemisphere Balance:")
+    output_lines.append(f"  Eastern (Houses 10-3): {east_count} planets")
+    output_lines.append(f"  Western (Houses 4-9): {west_count} planets")
+    output_lines.append(f"  Northern (Houses 1-6): {north_count} planets")
+    output_lines.append(f"  Southern (Houses 7-12): {south_count} planets")
+
+    # Mutual Receptions (traditional planets only)
+    traditional_planets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']
+    mutual_receptions = []
+
+    for i, planet_a_name in enumerate(traditional_planets):
+        planet_a = obj_by_name.get(planet_a_name)
+        if not planet_a:
+            continue
+        sign_a = planet_a.get('sign', {}).get('name')
+
+        for planet_b_name in traditional_planets[i+1:]:
+            planet_b = obj_by_name.get(planet_b_name)
+            if not planet_b:
+                continue
+            sign_b = planet_b.get('sign', {}).get('name')
+
+            # Check if planet A is in planet B's sign AND planet B is in planet A's sign
+            if sign_rulers.get(sign_a) == planet_b_name and sign_rulers.get(sign_b) == planet_a_name:
+                mutual_receptions.append(f"{planet_a_name} in {sign_a} ↔ {planet_b_name} in {sign_b}")
+
+    output_lines.append(f"\nMutual Receptions: {len(mutual_receptions)}")
+    if mutual_receptions:
+        for reception in mutual_receptions:
+            output_lines.append(f"  - {reception}")
+    else:
+        output_lines.append("  None")
+
+    # Tight Aspects Summary (orb < 2°)
+    tight_aspects = []
+    for active_id_str, passive_dict in chart_data.get('aspects', {}).items():
+        for passive_id_str, aspect_details in passive_dict.items():
+            orb = aspect_details.get('orb', 999)
+            if orb < 2.0:
+                active_obj = object_map.get(active_id_str)
+                passive_obj = object_map.get(passive_id_str)
+                if active_obj and passive_obj:
+                    active_name = active_obj.get('name', f'ID {active_id_str}')
+                    passive_name = passive_obj.get('name', f'ID {passive_id_str}')
+                    aspect_type = aspect_details.get('type', 'N/A')
+                    tight_aspects.append(f"{active_name} {aspect_type} {passive_name} (Orb: {orb:.2f}°)")
+
+    # Remove duplicates (since aspects are bidirectional)
+    tight_aspects = list(set(tight_aspects))
+
+    output_lines.append(f"\nTight Aspects (Orb < 2°): {len(tight_aspects)}")
+    if tight_aspects:
+        for aspect in sorted(tight_aspects):
+            output_lines.append(f"  - {aspect}")
+    else:
+        output_lines.append("  None")
+
+    output_lines.append("-" * 25) # Separator
     output_lines.append("--- End of Natal Chart ---")
 
     return "\n".join(output_lines)
 
 if __name__ == "__main__":
-    subject_data_file = "src/natal_reader/subjects/hayden_brown.json"
+    subject_data_file = "src/natal_reader/subjects/john_doe.json"
     with open(subject_data_file, 'r') as f:
         subject_data = json.load(f)
 
@@ -273,5 +404,6 @@ if __name__ == "__main__":
     longitude = subject_data['birthplace']['longitude']
     
     natal_chart = get_natal_chart(dob, latitude, longitude)
-    with open("natal_chart.txt", "w") as f:
+    test_dir = "tests"
+    with open(f"{test_dir}/john_doe_natal_chart.txt", "w") as f:
         f.write(natal_chart)

@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
-NOW_DT: datetime = datetime.now()
+NOW_DT: datetime = datetime.now(timezone.utc)
 NOW: str = NOW_DT.strftime("%Y-%m-%d %H-%M")
 TIMESTAMP: str = NOW_DT.strftime("%Y%m%d_%H%M%S")
 DATE_TODAY: str = NOW_DT.strftime("%Y-%m-%d")

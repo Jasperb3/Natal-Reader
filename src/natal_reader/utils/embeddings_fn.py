@@ -17,7 +17,7 @@ def custom_gemini_embedding_fn(text):
             return None
 
         result = genai_client.models.embed_content(
-            model="text-embedding-004",
+            model="gemini-embedding-001",
             contents=text
         )
         # Extract the list of floats from the embeddings object

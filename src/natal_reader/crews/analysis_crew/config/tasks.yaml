@@ -1,0 +1,176 @@
+natal_chart_interpretation_task:
+  description: >
+    Generate a comprehensive, degree-accurate interpretation of the subject's
+    natal chart using the full astronomical dataset provided. Use the tools
+    available to you to research information and find additional details
+    relevant to the subject's chart.
+
+    Output should be modular and clearly structured to serve as the analytical
+    backbone for the final report.
+
+    Required analytical coverage:
+
+    - Chart Context:
+        - Classify chart shape and interpret implications for personality flow.
+        - Determine diurnal/nocturnal status and analyze sect alignment of each planet.
+        - Note Moon phase and house system used.
+        - Reference the pre-computed patterns section for chart ruler, stelliums,
+          hemisphere balance, and mutual receptions — verify and expand upon them.
+
+    - Element, Modality, Hemisphere, and Quadrant Balance:
+        - Provide count summaries and interpretations.
+        - Compare dominant and deficient elements/modalities and explain behavioral
+          or psychological expression.
+        - Relate to psychological temperament and inner vs outer orientation.
+
+    - Ascendant and Chart Ruler:
+        - Analyze the rising sign and chart ruler's sign, house, aspects, dignities,
+          motion, and sect.
+        - Highlight mutual reception, angularity, and dispositorship chains.
+        - Interpret the chart ruler's overall influence on life trajectory.
+
+    - Planetary Positions and Conditions:
+        - For each planet (Sun through Pluto): sign, house, decan, dignity/debility,
+          sect status, motion (direct/retrograde).
+        - Include symbolic meaning of the house each planet occupies.
+        - Include Chiron (wound/healing axis), Lilith (shadow/instinct), and the
+          Lunar Nodes (True North and South Node) with psychological framing.
+        - Flag and interpret out-of-bounds planets with unconventional expressions.
+        - Provide 1-2 grounded psychological or behavioral examples per planet.
+
+    - Aspects:
+        - Identify all major aspects with orb and degree details.
+        - Distinguish applying vs separating and associative vs dissociate.
+        - Flag tight aspects (<2° orb) from the pre-computed summary and interpret
+          their intensification.
+        - Group aspects thematically (communication, transformation, relationships, drive).
+        - Highlight configurations (T-squares, yods, grand trines) if present.
+
+    - Points and Angles:
+        - Analyze Asc, Desc, MC, IC individually — note any anaretic (29°)
+          or otherwise significant degrees on the angles.
+        - Interpret Chiron (core wound and healing gift), Lilith (primal
+          instinct and shadow integration), and the True Lunar Nodes
+          (evolutionary direction from South Node past to North Node future).
+
+    - Planetary Strengths & Focal Points:
+        - Highlight planets with high angularity, multiple aspects, or rulership.
+        - Identify stelliums and thematic clusters.
+
+    Constraints:
+    - Do NOT fabricate aspects, degrees, or placements not present in the chart data.
+    - Do NOT infer house rulership systems beyond what the data provides.
+    - If a data point is absent, state that explicitly rather than inventing one.
+    - Cite specific degrees and orbs from the data when making claims.
+    - Every claim must be traceable to a specific data point in the chart.
+
+    Output guidelines:
+    - Clean markdown (no code blocks)
+    - Degree-accurate and evidence-based
+    - Maintain interpretive richness anchored in concrete chart features
+    - Ensure modularity for seamless integration into report generation
+    - Target 3,000–5,000 words
+
+    Subject's Name: {name}
+    Today's date: {today}
+    Natal Chart: {natal_chart}
+
+  expected_output: >
+    A detailed, degree-precise, multi-tradition analysis of the subject's natal chart,
+    organized for seamless report integration and grounded in psychological insight.
+    Every interpretation must be traceable to specific chart data points.
+  agent: natal_chart_interpreter
+
+
+natal_report_writing_task:
+  description: >
+    Translate the structured natal chart interpretation into a polished,
+    psychologically astute, and narratively cohesive report. Faithfully preserve
+    all technical accuracy from the interpretation while enhancing emotional
+    resonance, symbolic depth, and practical relevance.
+
+    Goal:
+    - Present the chart as a symbolic, evolving life map — developmental potentials
+      rather than deterministic outcomes.
+    - Craft each section as a self-contained thematic unit while weaving them
+      into a unified personal narrative.
+    - Write with emotional intelligence, psychological nuance, and archetypal clarity.
+    - Never extrapolate, speculate, or introduce data beyond the provided interpretation.
+
+    Report Structure (Markdown, no code blocks):
+
+    **Title Block and Chart Header** (~50 words)
+        ```
+        # Natal Chart for {name}
+        Date of Report: {today}
+
+        [natal_chart]
+
+        **Date of Birth:** {date_of_birth}
+        **Place of Birth:** {place_of_birth}
+        ```
+
+    1. **Introduction** (~200-300 words)
+        - Chart type, house system, chart shape, Moon phase.
+        - Establish tone: symbolic blueprint of potentials, not fixed destiny.
+
+    2. **Energetic Balance & Pattern Emphasis** (~300-500 words)
+        - Elemental, modal, hemispheric, and quadrant distributions.
+        - Dominant vs underrepresented energies.
+        - How the energetic landscape shapes core life orientation.
+
+    3. **Core Identity: The Big 3** (~500-800 words)
+        - Ascendant, Sun, Moon — each with sign, house, key aspects.
+        - Synthesis of how the Big 3 interact dynamically.
+
+    4. **Planetary Psychology and Celestial Dynamics** (~2,000-3,000 words)
+        - Chart Ruler: sign, house, aspects, dignity — primary narrative agent.
+        - Classical Planets (Mercury–Saturn): psychological function through
+          sign, house, motion, dignity, aspects. 200-400 words each.
+        - Modern Planets (Uranus, Neptune, Pluto): generational/unconscious forces.
+        - Sensitive Points: Chiron (wound/healing), Lilith (shadow/instinct),
+          True Lunar Nodes (evolutionary axis).
+
+    5. **Aspects & Archetypal Dynamics** (~500-800 words)
+        - Significant aspects and configurations, especially tight ones.
+        - Major intrapsychic conflicts or synergies.
+        - Grouped thematically, not as raw listings.
+
+    6. **House Emphasis** (~300-500 words)
+        - Concentration or angular emphasis.
+        - Life domains of focused evolution or recurring challenge.
+
+    7. **Psychological and Developmental Themes** (~400-600 words)
+        - Recurrent motifs, inner polarities, key developmental arcs.
+        - Vivid, grounded metaphors over clinical abstraction.
+
+    8. **Guidance and Reflections** (~300-500 words)
+        - 3-5 actionable insights rooted in specific chart patterns.
+        - Empowering, emotionally validating, pragmatically applicable.
+
+    9. **Conclusion** (~200-300 words)
+        - Recap strengths, tensions, potential trajectory.
+        - Reaffirm lifelong symbolic integration.
+
+    10. **Glossary** (~300-500 words)
+        - All technical and symbolic terms used, in accessible language.
+
+    Target total report length: 8,000–12,000 words.
+
+    Requirements:
+    - Markdown (no code blocks)
+    - Emotionally intelligent, symbolically coherent, supportive tone
+    - Modular, consistently formatted structure
+    - Thematic integrity over isolated trait listing
+    - Emotional validation and empowerment
+    - Symbolic and psychological precision — no deterministic labels
+    - All analysis tied strictly to provided interpretation data
+    - Cohesive narrative weaving across all sections
+    - Vivid yet grounded metaphors
+    - Client-centered, growth-oriented focus
+
+  expected_output: >
+    A modular, engaging, and psychologically insightful natal chart report of
+    8,000–12,000 words in clean markdown, structured around the Big 3 identity
+    core and planetary dynamics, integrating symbolic and practical meaning throughout.
+  agent: natal_report_writer

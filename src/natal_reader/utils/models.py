@@ -18,9 +18,7 @@ class NatalState(BaseModel):
     today: str = datetime.now().strftime("%A, %d %B %Y")
     natal_chart: str = ""
     kerykeion_natal_chart_png: str = ""
-    gpt_natal_analysis: str = ""
-    gemini_natal_analysis: str = ""
-    merged_natal_analysis: str = ""
+    natal_analysis: str = ""
     final_natal_analysis: str = ""
     report_markdown: str = ""
     report_pdf: str = ""

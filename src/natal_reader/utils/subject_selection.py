@@ -1,6 +1,7 @@
 import json
 import os
 import googlemaps
+from timezonefinder import TimezoneFinder
 from natal_reader.utils.constants import SUBJECT_DIR
 from datetime import datetime
 from dotenv import load_dotenv
@@ -75,20 +76,55 @@ def get_time_of_birth():
     return hour, minute
 
 
-def get_timezone(latitude, longitude):
-    timestamp = datetime.now().timestamp()
+def _is_iana_timezone(tz_str):
+    """Check if a timezone string is a proper IANA timezone ID (e.g. 'Europe/London')
+    rather than a fixed-offset abbreviation (e.g. 'GMT', 'UTC', 'EST')."""
+    return tz_str and "/" in tz_str
+
+
+def _get_timezone_from_coordinates(latitude, longitude):
+    """Local timezone lookup using timezonefinder (no API call needed).
+    Always returns a proper IANA timezone ID like 'Europe/London'."""
     try:
+        tf = TimezoneFinder()
+        return tf.timezone_at(lat=latitude, lng=longitude)
+    except Exception as e:
+        print(f"{RED}Local timezone lookup failed: {e}{RESET}")
+        return None
+
+
+def get_timezone(latitude, longitude):
+    """Determine IANA timezone ID for coordinates.
+    Uses Google Maps API as primary source, timezonefinder as local fallback.
+    Validates result is a proper IANA timezone ID (not a fixed-offset abbreviation)."""
+    timezone_str = None
+
+    # Primary: Google Maps Timezone API
+    try:
+        timestamp = datetime.now().timestamp()
         timezone_result = gmaps.timezone((latitude, longitude), timestamp=timestamp)
         if timezone_result and 'timeZoneId' in timezone_result:
             timezone_str = timezone_result['timeZoneId']
-        else:
-             # Format warning message in red (optional, could be yellow/normal)
-            print(f"{RED}Warning: Could not determine timezone via Google API.{RESET}")
-            timezone_str = None
     except Exception as e:
-        # Format error message in red
-        print(f"{RED}Error getting timezone from Google API: {e}{RESET}")
-        timezone_str = None # Or ask user? For now, setting to None.
+        print(f"{RED}Google Maps timezone lookup failed: {e}{RESET}")
+
+    # Fallback: timezonefinder (local, no API call needed)
+    if not timezone_str:
+        print("Falling back to local timezone lookup...")
+        timezone_str = _get_timezone_from_coordinates(latitude, longitude)
+
+    # Validate: if result is a fixed-offset abbreviation (e.g. "GMT", "UTC"),
+    # override with the proper IANA timezone from coordinates
+    if timezone_str and not _is_iana_timezone(timezone_str):
+        print(f"Warning: '{timezone_str}' is not an IANA timezone ID. Resolving from coordinates...")
+        iana_tz = _get_timezone_from_coordinates(latitude, longitude)
+        if iana_tz:
+            print(f"Using '{iana_tz}' instead of '{timezone_str}'.")
+            timezone_str = iana_tz
+
+    if not timezone_str:
+        print(f"{RED}Warning: Could not determine timezone for coordinates ({latitude}, {longitude}).{RESET}")
+
     return timezone_str
 
 

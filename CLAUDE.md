@@ -28,31 +28,29 @@ No test runner, linter, or CI is currently configured.
 
 ### Flow Pipeline (`src/natal_reader/main.py`)
 
-`NatalFlow(Flow[NatalState])` orchestrates a sequential 10-step pipeline:
+`NatalFlow(Flow[NatalState])` orchestrates a sequential 9-step pipeline:
 
 1. **setup_qdrant** — Indexes astrology reference books into Qdrant vector DB
-2. **get_natal_chart_data** — Calculates chart using Immanuel library
-3. **generate_gpt_natal_analysis** — GPT-4.1 crew interprets chart
-4. **generate_gemini_natal_analysis** — Gemini 2.5 Flash crew interprets chart
-5. **merge_natal_analyses** — MergeCrew synthesizes both analyses
-6. **review_merged_natal_analysis** — ReviewCrew critiques and enhances
-7. **get_kerykeion_natal_chart** — Generates chart wheel PNG via Kerykeion
-8. **save_natal_analysis** — Saves markdown + converts to PDF (WeasyPrint)
-9. **send_natal_analysis** — Creates Gmail draft with PDF attachment
-10. **print_final_stats** — Logs timing and token usage
+2. **get_natal_chart_data** — Calculates chart using Immanuel library (with pre-computed patterns)
+3. **generate_natal_analysis** — Single optimized AnalysisCrew produces interpretation + report
+4. **review_natal_analysis** — ReviewCrew critiques and enhances (with chart data verification)
+5. **format_natal_analysis** — FormattingCrew applies HTML markup for PDF styling
+6. **get_kerykeion_natal_chart** — Generates chart wheel PNG via Kerykeion
+7. **save_natal_analysis** — Saves markdown + converts to PDF (WeasyPrint)
+8. **send_natal_analysis** — Creates Gmail draft with PDF attachment
+9. **print_final_stats** — Logs timing and token usage
 
 Steps are chained via `@start()` and `@listen()` decorators. Token usage is tracked via `@track_token_usage` decorator.
 
-### Five Crews (`src/natal_reader/crews/`)
+### Four Crews (`src/natal_reader/crews/`)
 
 Each crew has its own directory with `*_crew.py`, `config/agents.yaml`, and `config/tasks.yaml`:
 
 | Crew | Model | Agents | Purpose |
 |------|-------|--------|---------|
-| `gpt_analysis_crew` | GPT-4.1 | interpreter, writer | First independent analysis |
-| `gemini_analysis_crew` | Gemini 2.5 Flash | interpreter, writer | Second independent analysis |
-| `merge_crew` | Gemini 2.5 Flash | merger | Synthesize both reports |
-| `review_crew` | Gemini 2.5 Flash | critic, enhancer, markdown_enhancer | Quality review + styling |
+| `analysis_crew` | GPT-4.1 (temp: 0.4/0.7) | interpreter, writer | Single-pass unified analysis combining Hellenistic, Psychological, and Humanistic traditions |
+| `review_crew` | DeepSeek + Gemini 2.5 Flash | critic, enhancer | Factual verification + quality review |
+| `formatting_crew` | GPT-4.1-mini (temp: 0.3) | markdown_enhancer | HTML markup for PDF styling |
 | `gmail_crew` | GPT-4.1 | email_writer, gmail_drafter | Compose + draft email |
 
 ### Tools (`src/natal_reader/tools/`)
@@ -66,7 +64,7 @@ Custom CrewAI tools wrapping external APIs:
 
 ### State Management
 
-`NatalState` (Pydantic BaseModel in `utils/models.py`) carries all data between flow steps: birth info, chart data, analyses, and output paths. Birth data is loaded interactively from JSON files in `src/natal_reader/subjects/`.
+`NatalState` (Pydantic BaseModel in `utils/models.py`) carries all data between flow steps: birth info, chart data (with pre-computed patterns), analysis output, and file paths. Birth data is loaded interactively from JSON files in `src/natal_reader/subjects/`.
 
 ### Key Utilities (`src/natal_reader/utils/`)
 
@@ -99,8 +97,11 @@ Gmail OAuth token stored at `src/natal_reader/utils/token.json`.
 
 ## Key Patterns
 
-- **Dual-model consensus**: GPT and Gemini analyze independently, then results are merged to reduce model bias
-- **RAG pipeline**: Astrology books are chunked, embedded (Gemini `text-embedding-004`), and stored in Qdrant for agent retrieval
+- **Single-pass multi-tradition analysis**: Unified crew synthesizes Hellenistic, Psychological, and Humanistic astrology in one interpretation
+- **Temperature tuning**: 0.4 for precise technical interpretation, 0.7 for creative narrative writing
+- **Pre-computed chart patterns**: Chart ruler, stelliums, hemisphere balance, mutual receptions, and tight aspects calculated upfront
+- **Factual verification**: Review crew receives raw chart data to verify all degrees, aspects, and placements
+- **RAG pipeline**: Astrology books are chunked, embedded (Gemini `text-embedding-004`), and stored in Qdrant for agent retrieval (limit: 8 results, threshold: 0.3)
 - **CrewAI Flow**: Sequential steps with `@listen()` decorator chaining; state passed via Pydantic model
 - **Crew configuration**: Agents and tasks defined in YAML configs, wired in Python crew classes
 - Python `>=3.12.9, <3.13` strictly required

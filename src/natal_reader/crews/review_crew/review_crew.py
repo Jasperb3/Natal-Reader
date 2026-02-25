@@ -4,7 +4,6 @@ from crewai.project import CrewBase, agent, crew, task
 from natal_reader.tools.google_search_tool import GoogleSearchTool
 from natal_reader.tools.gemini_search_tool import GeminiSearchTool
 from natal_reader.tools.qdrant_search_tool import QdrantSearchTool
-from natal_reader.tools.linkup_search_tool import LinkUpSearchTool
 from natal_reader.utils.constants import TIMESTAMP
 from dotenv import load_dotenv
 
@@ -12,20 +11,15 @@ load_dotenv()
 
 google_search_tool = GoogleSearchTool(api_key=os.getenv("GOOGLE_SEARCH_API_KEY"), cx=os.getenv("SEARCH_ENGINE_ID"))
 
-gpt41 = LLM(
-	model="gpt-4.1",
-	api_key = os.getenv("OPENAI_API_KEY"),
-	temperature=0.7
-)
-
-gpt41mini = LLM(
-	model="gpt-4.1-mini",
-	api_key = os.getenv("OPENAI_API_KEY"),
-	temperature=0.7
-)
-
 gemini_flash = LLM(
-	model="gemini/gemini-2.5-flash-preview-04-17",
+	model="gemini/gemini-3-flash-preview",
+	api_key = os.getenv("GEMINI_API_KEY"),
+	temperature=0.7,
+	timeout=600
+)
+
+gemini_pro = LLM(
+	model="gemini/gemini-3.1-pro-preview",
 	api_key = os.getenv("GEMINI_API_KEY"),
 	temperature=0.7,
 	timeout=600
@@ -51,7 +45,7 @@ class ReviewCrew():
 	def critic(self) -> Agent:
 		return Agent(
 			config=self.agents_config['critic'],
-			llm=deepseek,
+			llm=gemini_pro,
 			verbose=True
 		)
 
@@ -59,16 +53,8 @@ class ReviewCrew():
 	def report_enhancer(self) -> Agent:
 		return Agent(
 			config=self.agents_config['report_enhancer'],
-			llm=gemini_flash,
-			tools=[google_search_tool, GeminiSearchTool(), QdrantSearchTool(), LinkUpSearchTool()],
-			verbose=True
-		)
-
-	@agent
-	def markdown_enhancer(self) -> Agent:
-		return Agent(
-			config=self.agents_config['markdown_enhancer'],
-			llm=gpt41mini,
+			llm=gemini_pro,
+			tools=[google_search_tool, GeminiSearchTool(), QdrantSearchTool()],
 			verbose=True
 		)
 
@@ -84,13 +70,6 @@ class ReviewCrew():
 		return Task(
 			config=self.tasks_config['report_enhancement_task'],
 			output_file=f"crew_outputs/{TIMESTAMP}/enhanced_report.md"
-		)
-
-	@task
-	def markdown_enhancement_task(self) -> Task:
-		return Task(
-			config=self.tasks_config['markdown_enhancement_task'],
-			output_file=f"crew_outputs/{TIMESTAMP}/tagged_markdown.md"
 		)
 
 	@crew

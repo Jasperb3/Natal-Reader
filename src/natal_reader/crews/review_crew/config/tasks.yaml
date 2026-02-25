@@ -1,72 +1,125 @@
 review_task:
   description: >
-    Carefully review the generated natal report with a critical and constructive lens to ensure it meets high standards for interpretive depth, narrative clarity, psychological relevance, and structural integrity, based only on the provided content and criteria.
+    Carefully review the generated natal report with a critical and constructive lens to ensure it meets high standards for factual accuracy, interpretive depth, narrative clarity, psychological relevance, and structural integrity.
+
+    Use the following astronomical chart data as ground truth to verify all
+    factual claims in the report (degrees, aspects, house placements, dignities):
+
+    {natal_chart}
+
+    Your first evaluation pass must check factual accuracy against this data.
+    Flag any discrepancies before evaluating interpretive quality.
+
     The goal is to identify specific areas for improvement in the report's interpretation and presentation for the reader. Maintain the perspective of a client-oriented report focused on psychological and humanistic astrological insights.
+
     Criteria Checklist: Evaluate the report against these points:
+    * Factual Accuracy: Are all degrees, aspects, house placements, and dignities cited in the report accurate according to the chart data? Are any chart features mentioned that don't exist in the data? Are any chart features from the data omitted?
     * Interpretive Adequacy: Are the core chart elements (Sun, Moon, Ascendant, Chart Ruler, major aspects, stellia, dominant houses) meaningfully interpreted and connected? Is appropriate context given to planetary condition (sect, dignity, motion) where relevant to the narrative? Are symbolic patterns synthesized into coherent, relatable psychological themes? Are elemental balances, modality distributions, and house emphasis integrated where they support psychological insight or recurring themes?
     * Narrative Flow & Clarity: Do sections transition smoothly, building a coherent understanding? Is the language clear, engaging, and free from unnecessary jargon? Is interpretive content tailored to avoid repetition across different planetary or aspect sections?
     * Practical & Psychological Relevance: Are astrological symbols and patterns translated into relatable, real-world experiences or psychological dynamics? Do sections offering guidance or reflection provide actionable insights tied directly to the chart's indications?
     * Structural Integrity & Formatting: Does the report follow a logical structure? Is markdown used correctly for headers and subheadings? Is the [natal_chart] placeholder correctly included in the designated section? Are technical terms defined or explained where relevant? Is the glossary adequately tailored to terms used in the report?
+
+    IMPORTANT: Your critique will be used by an enhancement agent to edit the
+    report. To prevent unintended content loss:
+    - Be SPECIFIC about what needs to change. Reference exact sections and quotes.
+    - Explicitly state what should be PRESERVED. If a section is well-written
+      but needs one correction, say "This section is strong — only correct X."
+    - NEVER suggest wholesale section rewrites. Instead, suggest targeted edits.
+    - End your critique with a "Content to Preserve" section listing the
+      report's strongest elements that must NOT be cut during enhancement.
+
     Provide a structured critique with clear headings and specific, actionable bullet points. Be discerning, concise and direct.
-    Your critique should serve as a precise guide for the enhancement process.
+    Your critique should serve as a precise guide for TARGETED EDITS, not a mandate for rewriting.
+
     Today's date is {today}
     Report:
     {report}
   expected_output: >
-    A structured critique in markdown, formatted with headings and bullet points as specified, clearly identifying interpretive omissions, redundancies, clarity issues, and actionable suggestions for enhancing the natal report's depth, resonance, practical relevance, and flow.
+    A structured critique in markdown, formatted with headings and bullet points as specified, clearly identifying factual errors, interpretive omissions, redundancies, clarity issues, and actionable suggestions for enhancing the natal report's accuracy, depth, resonance, practical relevance, and flow.
   agent: critic
 
 
 report_enhancement_task:
   description: >
-    Refine and enrich the natal report using the critic’s feedback and your own expertise, guided by established astrological frameworks and the embedded data.
-    Use the tools available to you to research additional relevant information where necessary.
-    Focus on improving interpretive depth, narrative clarity, and real-world applicability without duplicating or negating existing content already present and deemed effective.
-    Preserve the report’s voice, structure, and coherence. Ensure all added content contributes to the overall narrative and integrates seamlessly.
-    Avoid referring to chart features that are not discussed in the provided interpretation or the critique, unless absolutely essential for context.
-    Identify sections requiring expansion, clarification, smoother transitions, or better examples as highlighted in the critique. Prioritize edits that strengthen the overall narrative, thematic synthesis, and reader engagement.
-    Favor symbolic metaphors or life examples that mirror the placement’s inherent polarity, process, or tension (e.g., Mars in Libra = "assertiveness in the dance of fairness").
-    Only introduce new planetary placements or houses if they are implicitly referenced in the critique and their inclusion is critical to interpretive clarity.
+    Enhance the natal report by applying the critic's feedback as TARGETED EDITS
+    to the existing text. Your output must contain ALL original content plus
+    improvements — the enhanced report should be LONGER than the original, not shorter.
 
+    ============================================================
+    CRITICAL: CONTENT PRESERVATION RULES
+    ============================================================
 
-    Enhancement Guidelines:
+    These rules are ABSOLUTE and override all other instructions:
 
-    1. **Planning First**:
-        - Read the full report and the critique carefully.
-        - Identify sections needing more depth, smoother transitions, or clearer examples.
-        - Prioritize edits that improve synthesis, thematic consistency, and reader engagement.
+    1. **NEVER delete a section or subsection** from the original report.
+       Every section header (##) and subsection header (###) in the original
+       MUST appear in the enhanced report.
 
-    2. **Enhance with Precision**:
-        - Expand interpretations only where the feedback or report suggests underdevelopment.
-        - Use exact chart features (sign, house, degree, aspects) to ground every new insight.
-        - Add emotional nuance, symbolic framing, or psychological strategies as appropriate.
+    2. **NEVER delete a planetary breakdown.** If the original has subsections
+       for Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto,
+       Chiron, Lilith, and the Lunar Nodes — ALL must remain in the enhanced report.
 
-    3. **Maintain Voice and Flow**:
-        - Use accessible language without oversimplifying.
-        - Avoid duplicating existing content or introducing new placements.
-        - Integrate metaphors, life examples, or relational patterns that support symbolic meaning.
+    3. **NEVER delete aspect listings with orb degrees.** If the original lists
+       "Opposition Moon (5.3°)" under the Sun, keep it.
 
-    **Areas to Prioritize for Depth**:
-      - Planetary placements in house + sign
-      - Key aspects and their psychological tension or harmony
-      - House themes and developmental trajectories
-      - Integration of symbolic and practical meaning
+    4. **NEVER delete "Practical Guidance" or "Theme" blocks.** These are
+       high-value content for the reader. You may improve their wording but
+       must not remove them.
 
-    **Output Instructions**:
-    - Format in clean, modular markdown. Remove any unnecessary backticks ("```") or codeblocks.
-    - Output ONLY the final, edited report text. Do not include any commentary, notes, or internal thinking process within the output.
-    - Preserve `[natal_chart]` placeholder.
-    - Ensure smooth transitions, clear headers, and section cohesion.
+    5. **NEVER delete glossary terms.** You may add new terms but must keep
+       all existing definitions.
+
+    6. **NEVER delete decan descriptions or Lunar Node interpretations.**
+
+    7. **NEVER summarize or condense existing paragraphs** into shorter
+       versions. If a paragraph needs improvement, edit it in place — do not
+       replace three sentences with one.
+
+    If the critique says content is FACTUALLY WRONG, correct it in place.
+    If the critique says content is REDUNDANT, rephrase to reduce repetition
+    but do NOT delete the interpretive content — relocate or integrate it.
+
+    ============================================================
+    ENHANCEMENT WORKFLOW
+    ============================================================
+
+    Step 1: Read the critique and extract a numbered list of specific changes.
+    Step 2: For EACH change, identify the exact location in the original report.
+    Step 3: Apply each change surgically:
+      - CORRECTION: Replace the incorrect claim with the correct one at that location.
+      - ADDITION: Insert new content at the appropriate location, weaving it
+        into surrounding paragraphs or adding a new subsection.
+      - EXPANSION: Add depth to the existing text without removing what's there.
+    Step 4: Verify that every section, subsection, planet breakdown, aspect
+      listing, guidance point, and glossary term from the original still exists.
+
+    ============================================================
+    ENHANCEMENT GUIDELINES
+    ============================================================
+
+    - You may use search tools ONLY to verify or enrich existing interpretations.
+    - Do NOT introduce new planetary placements, aspects, or chart features not
+      in the original analysis or critique. Any new content must be supportable
+      by the chart data provided.
+    - Favor symbolic metaphors or life examples that mirror the placement's
+      inherent polarity, process, or tension.
+    - Maintain the report's voice, structure, and coherence.
     - Keep the tone emotionally intelligent, empowering, and insightful.
 
-    Ensure that the title block is formatted exactly as specified below and includes the natal chart placeholder `[natal_chart]`:
+    **Output Instructions**:
+    - Format in clean, modular markdown. Remove any unnecessary backticks or codeblocks.
+    - Output ONLY the final, edited report text. No commentary or thinking process.
+    - Preserve `[natal_chart]` placeholder.
+    - The enhanced report MUST be at least as long as the original report.
+
+    Ensure that the title block is formatted exactly as specified below:
         ```
         # Natal Chart for {name}
         Date of Report: {today}
 
         [natal_chart]
 
-        **Date of Birth:** {date_of_birth}  
+        **Date of Birth:** {date_of_birth}
         **Place of Birth:** {place_of_birth}
         ```
 
@@ -75,155 +128,10 @@ report_enhancement_task:
     Report:
     {report}
   expected_output: >
-    The complete, revised natal report narrative in clean markdown format (without codeblocks), incorporating the enhancements suggested by the critic, deepening interpretive content, enhancing clarity and resonance, improving flow, and ensuring structural integrity with the specified title block and natal chart placeholder included. Output contains ONLY the final report text.
+    The complete, enhanced natal report in clean markdown (without codeblocks).
+    It MUST contain ALL sections, subsections, planetary breakdowns, aspect
+    listings, practical guidance points, and glossary terms from the original
+    report, plus the improvements from the critique integrated in place. The
+    enhanced report should be at least as long as the original, typically longer.
+    Output contains ONLY the final report text.
   agent: report_enhancer
-
-
-markdown_enhancement_task:
-  description: >
-    Your task is to finalize the astrological report for PDF rendering by performing two steps:
-
-    1. Clean the Text
-
-     - Remove all commentary, notes, or internal thinking left by previous contributors (i.e. everything before the title "# Natal Chart for {name}")
-     This includes meta-text such as implementation plans, critiques, revision summaries, or editorial reasoning.
-     - What remains should be only the polished final report content, ready for publication.
-
-    2. Enhance with HTML Tags
-
-    - Insert specific HTML tags into the Markdown text to activate styling defined in the astro_styling.css file.
-    - Apply tags only where appropriate, based on the structure and content of the report.
-    - **Do not** alter the report's content, wording, order, or meaning.
-    - **Do not** omit any report content (except the commentary removed in step 1).
-    - **Do not** wrap the output in markdown code blocks or surround it with triple backticks.
-    - **Do not** place tags around the [natal_chart] placeholder.
-    - Glyphs should be added only once, after the first use of the planetary or sign name. Do not repeat glyphs with every instance.
-    - Tables must include a <caption> and use <table class="planet-table">.
-    - Glossary entries must be placed outside interpretation boxes and do not receive symbol spans.
-
-    The output must be clean, publication-ready Markdown with inline HTML, suitable for direct conversion to a styled PDF.
-
-    Apply the following HTML tagging rules using available CSS features:
-
-    🔹 Headings
-    - Convert h2 headers (##) to: <h2 id="section-name">Heading Text</h2>
-      (ID is generated by lowercasing the text, removing punctuation, and replacing spaces with dashes).
-      This triggers a page break before the section and keeps the following content together.
-    - Convert h3, h4, h5, h6 to <h3> through <h6> respectively.
-
-    🔹 Interpretation Boxes
-    - Wrap key insights in:
-      <div class="interpretation-box">...</div>
-      These will be emphasized with background and margin styling and visually grouped with the header above.
-    - Do **not** wrap <div class="interpretation-box"> elements inside list tags (<ol> or <li>).
-      Instead, present each interpretation as its own standalone <div class="interpretation-box">.
-      Each box should be visually and structurally separated from others by spacing, not bullet/number formatting.
-
-    🔹 Planet Names (color-coded spans)
-    - Replace full planetary names (Sun, Moon, Mars, etc.) with:
-      <span class="planet-name">Planet</span>
-      Supported classes: sun, moon, mercury, venus, mars, jupiter, saturn, uranus, neptune, pluto
-
-    🔹 Planetary Glyphs
-    - Add Unicode panetary glyphs in parentheses after the first instance of the planetary name in the report.
-    - Wrap them in:
-      <span class="astro-symbol">☉</span>
-    - Do **not** include <span class="planet-name"> tags within the planetary glyphs.
-      Example:
-      Sun → <span class="planet-name">Sun</span><span class="astro-symbol"> (☉)</span>
-    - The glyphs are:
-      - Sun: ☉
-      - Moon: ☽
-      - Mercury: ☿
-      - Venus: ♀
-      - Mars: ♂
-      - Jupiter: ♃
-      - Saturn: ♄
-      - Uranus: ♅
-      - Neptune: ♆
-      - Pluto: ♇
-      - Earth: ⊕ (alternate: ♁)
-      - Ceres: ⚳
-      - Chiron: ⚷
-      - North Node: ☊
-      - South Node: ☋
-      - Part of Fortune: ⊗
-      - Ascendant: AS
-      - Midheaven: MC
-
-    🔹 Zodiac Signs (Glyphs)
-    - Add the appropriate Unicode glyph after the textual sign names (e.g. "Aries", "Pisces").
-    - Wrap the glyph in a span using the .sign-* class.
-      Example:
-      Aries → <span class="sign-aries">Aries (♈)</span>
-    - Available signs:
-      - Aries: ♈
-      - Taurus: ♉
-      - Gemini: ♊
-      - Cancer: ♋
-      - Leo: ♌
-      - Virgo: ♍
-      - Libra: ♎
-      - Scorpio: ♏
-      - Sagittarius: ♐
-      - Capricorn: ♑
-      - Aquarius: ♒
-      - Pisces: ♓
-
-    🔹 Aspect Symbols
-    - Add the appropriate Unicode glyph after the aspect words (e.g. "trine", "square", "opposition").
-    - Wrap them in <span> using the appropriate .aspect-* class.
-      Example:
-      "trine" → <span class="aspect-trine">Trine (Δ)</span>
-
-    - Supported aspects and corresponding spans:
-      - Conjunction: <span class="aspect-conjunction">Conjunction (☌)</span>
-      - Opposition: <span class="aspect-opposition">Opposition (☍)</span>
-      - Square: <span class="aspect-square">Square (☐)</span>
-      - Trine: <span class="aspect-trine">Trine (Δ)</span>
-      - Quincunx: <span class="aspect-quincunx">Quincunx (⊼)</span>
-
-    🔹 Strength Levels
-    - Wrap strength labels in:
-      <span class="very-strong">very strong</span>,
-      <span class="strong">strong</span>,
-      <span class="moderate">moderate</span>,
-      <span class="weak">weak</span>,
-      <span class="very-weak">very weak</span>
-
-    🔹 Tables
-    - Replace Markdown tables with:
-      <table class="planet-table">...</table>
-    - Use <caption> for a title, <th> for headers, and <td> for data cells.
-
-    🔹 Aspect Keywords
-    - Wrap keywords like “trine”, “square”, “conjunction” in:
-      <span class="harmonious-aspect">trine</span>,
-      <span class="challenging-aspect">square</span>,
-      <span class="neutral-aspect">conjunction</span>
-
-    🔹 Quotes or Reflections
-    - Wrap emotional or philosophical passages in:
-      <blockquote>...</blockquote>
-
-    🔹 Charts or Distribution Graphs
-    - Wrap custom chart blocks in:
-      <div class="chart-container">...</div>
-
-    🔹 Horizontal Section Breaks
-    - Insert <hr class="section-break"/> between major conceptual transitions (e.g., from signs to elements)
-
-    🔹 Glossary Formatting
-    - Use <div class="definition-term">Term</div><div class="definition-desc">Explanation</div>
-      when listing terms and their meanings.
-    - Do **not** include <span class="planet-name"> tags within the glossary.
-
-    🔹 Lists and Structure
-    - Ensure bullet lists use <ul><li>...</li></ul> and numbered lists use <ol><li>...</li></ol>
-    - Do not use Markdown table or list formatting; always convert to HTML structure.
-
-  expected_output: >
-    A fully tagged version of the original Markdown with appropriate inline HTML tags as specified.
-    All content must remain unchanged except for the removal of commentary and the addition of tags.
-    The output must be clean Markdown with embedded HTML, suitable for direct PDF rendering.
-  agent: markdown_enhancer

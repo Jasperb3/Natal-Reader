@@ -43,10 +43,10 @@ if __name__ == "__main__":
     gmail_tool = GmailAttachmentTool()
 
     report = "/home/j/ai/crewAI/finance/stock_analyser/final_reports/2025-03-12/MSFT_Stock_Analysis_Report_20250312_132728.md"
-    report_pdf = "/home/j/ai/crewAI/finance/stock_analyser/final_reports/2025-03-12/MSFT_Stock_Analysis_Report_20250312_132728.pdf"
+    report_pdf = "/home/j/ai/crewAI/astro/natal_reader/natal_reader/outputs/2026-02-24/Benjamin_Jasper_20260224_235140.pdf"
 
     with open(report, "r") as file:
         body = file.read()
 
-    print(gmail_tool.run(body=body, subject="Test Email", attachment_filename=report_pdf))
+    print(gmail_tool.run(body=body, subject="Test Email", attachment_filename=report_pdf, to="ben.j.jasper@gmail.com"))
         

@@ -137,7 +137,11 @@ def calculate_transit_data(transit_data: dict) -> str:
     return output
 
 if __name__ == "__main__":
+    test_dir = "tests"
     transit_data = get_current_transits((51.565131, -0.147709))
-    natal_aspects = get_transit_natal_aspects((51.565131, -0.147709), datetime(1984, 1, 11, 18, 45, 0), (51.565131, -0.147709))
+    natal_aspects = get_transit_natal_aspects((51.565131, -0.147709), datetime(1990, 1, 1, 0, 0, 0), (40.7128, -74.006))
     print(transit_data)
     print(calculate_transit_data(natal_aspects))
+    with open(f"{test_dir}/john_doe_natal_chart.md", "w") as f:
+        f.write(f"Transit Data: {transit_data}\n")
+        f.write(f"Natal Aspects: {natal_aspects}\n")

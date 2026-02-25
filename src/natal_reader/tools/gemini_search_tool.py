@@ -8,7 +8,7 @@ gemini_api_key = os.environ.get("GEMINI_API_KEY")
 
 client = genai.Client(api_key=gemini_api_key, http_options={'api_version': 'v1alpha'})
 
-MODEL = 'gemini-2.5-flash-preview-04-17'
+MODEL = 'gemini-3-flash-preview'
 
 
 class GeminiSearchToolInput(BaseModel):
