@@ -1,6 +1,0 @@
-Timing Log - 2025-04-23 12:57:43
-
-2025-04-23 12:57:50 - Function setup_qdrant(args = (<natal_reader.main.NatalFlow object at 0x7f8cca087cb0>,)) (kwargs = {}) took 0.9297 seconds
-2025-04-23 12:57:51 - Function get_natal_chart_data(args = (<natal_reader.main.NatalFlow object at 0x7f8cca087cb0>,)) (kwargs = {}) took 0.1715 seconds
-generate_gpt_natal_analysis used 11,887 tokens
-2025-04-23 12:58:04 - Function generate_gpt_natal_analysis(args = (<natal_reader.main.NatalFlow object at 0x7f8cca087cb0>,)) (kwargs = {}) took 12.9879 seconds
