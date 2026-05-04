@@ -6,7 +6,7 @@ subject_data = get_subject_data()
 
 class NatalState(BaseModel):
     name: str = subject_data["name"]
-    email: str = subject_data["email"]
+    email: str = subject_data.get("email", "")
     date_of_birth: datetime = datetime.strptime(subject_data["date_of_birth"], "%Y-%m-%d %H:%M:%S")
     dob: str = datetime.strftime(date_of_birth, "%H:%M %A, %d %B %Y")
     birthplace: str = f"{subject_data['birthplace']['place']}, {subject_data['birthplace']['country']}"

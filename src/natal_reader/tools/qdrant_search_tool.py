@@ -71,15 +71,15 @@ class QdrantSearchTool(BaseTool):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.qdrant_url = os.environ.get("QDRANT_CLUSTER_URL")
-        self.qdrant_api_key = os.environ.get("QDRANT_API_KEY")
+        self.qdrant_url = os.environ.get("QDRANT_LOCAL_URL")
+        self.qdrant_api_key = os.environ.get("QDRANT_LOCAL_API_KEY")
         self.collection_name = os.environ.get(
             "QDRANT_COLLECTION_NAME", "astro_knowledge"
         )  # Use env, fallback to default
 
         if not self.qdrant_url or not self.qdrant_api_key:
             raise ValueError(
-                "QDRANT_CLUSTER_URL and QDRANT_API_KEY must be set as environment variables."
+                "QDRANT_LOCAL_URL and QDRANT_LOCAL_API_KEY must be set as environment variables."
             )
 
         if QDRANT_AVAILABLE:
@@ -148,17 +148,17 @@ if __name__ == "__main__":
 
     load_dotenv()
     # Example usage with dummy environment variables
-    os.environ["QDRANT_CLUSTER_URL"] = os.environ.get("QDRANT_CLUSTER_URL")  # your qdrant url
-    os.environ["QDRANT_API_KEY"] = os.environ.get("QDRANT_API_KEY")  # your qdrant api key
+    os.environ["QDRANT_LOCAL_URL"] = os.environ.get("QDRANT_LOCAL_URL")  # your qdrant url
+    os.environ["QDRANT_LOCAL_API_KEY"] = os.environ.get("QDRANT_LOCAL_API_KEY")  # your qdrant api key
     os.environ["GEMINI_API_KEY"] = os.environ.get("GEMINI_API_KEY") # your gemini api key
 
     if (
-        not os.environ.get("QDRANT_CLUSTER_URL")
-        or not os.environ.get("QDRANT_API_KEY")
+        not os.environ.get("QDRANT_LOCAL_URL")
+        or not os.environ.get("QDRANT_LOCAL_API_KEY")
         or not os.environ.get("GEMINI_API_KEY")
     ):
         print(
-            "Please set QDRANT_CLUSTER_URL, QDRANT_API_KEY and GEMINI_API_KEY environment variables."
+            "Please set QDRANT_LOCAL_URL, QDRANT_LOCAL_API_KEY and GEMINI_API_KEY environment variables."
         )
         exit(1)
 

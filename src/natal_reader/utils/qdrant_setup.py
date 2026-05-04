@@ -28,14 +28,14 @@ class Setup:
             self.genai_client = None
 
         # Initialize Qdrant client
-        self.qdrant_url = os.environ.get("QDRANT_CLUSTER_URL")
-        self.qdrant_api_key = os.environ.get("QDRANT_API_KEY")
+        self.qdrant_url = os.environ.get("QDRANT_LOCAL_URL")
+        self.qdrant_api_key = os.environ.get("QDRANT_LOCAL_API_KEY")
         if self.qdrant_url and self.qdrant_api_key:
             self.qdrant_client = QdrantClient(
                 url=self.qdrant_url, api_key=self.qdrant_api_key
             )
         else:
-            print("⚠️ QDRANT_URL or QDRANT_API_KEY not found in environment variables")
+            print("⚠️ QDRANT_LOCAL_URL or QDRANT_LOCAL_API_KEY not found in environment variables")
             self.qdrant_client = None
 
         # Collection name for Qdrant

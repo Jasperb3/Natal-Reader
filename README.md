@@ -41,35 +41,30 @@ Create a `.env` file in the project root with the following:
 OPENAI_API_KEY=your_openai_api_key
 GEMINI_API_KEY=your_gemini_api_key
 
-# Qdrant Cloud Configuration
-QDRANT_URL=https://your-cluster.qdrant.io
-QDRANT_API_KEY=your_qdrant_api_key
+# Qdrant Local Configuration
+QDRANT_LOCAL_URL=http://localhost:6333
+QDRANT_LOCAL_API_KEY=your_qdrant_local_api_key
 
 # Gmail OAuth (for email delivery)
 # Follow Google OAuth setup to generate token.json
 ```
 
-### 4. Set Up Qdrant Cloud
+### 4. Set Up Local Qdrant
 
-Natal Reader uses Qdrant Cloud for vector storage of astrology reference materials. To set up:
+Natal Reader uses a local Qdrant instance for vector storage of astrology reference materials. To set up:
 
-1. **Create a Qdrant Cloud account** at [https://cloud.qdrant.io](https://cloud.qdrant.io)
-
-2. **Create a new cluster** in the Qdrant Cloud dashboard
-
-3. **Get your credentials** from the cluster dashboard:
-   - **Endpoint URL** (e.g., `https://xxx-xxx.aws.cloud.qdrant.io`)
-   - **API Key** from the "API Keys" section
-
-4. **Add credentials to `.env`**:
+1. **Run Qdrant locally** via Docker:
    ```bash
-   QDRANT_URL=https://your-cluster.qdrant.io
-   QDRANT_API_KEY=your_api_key
+   docker run -p 6333:6333 qdrant/qdrant
    ```
 
-For detailed setup instructions, see the [Qdrant Cloud Quickstart Guide](https://qdrant.tech/documentation/cloud-quickstart/).
+2. **Add credentials to `.env`**:
+   ```bash
+   QDRANT_LOCAL_URL=http://localhost:6333
+   QDRANT_LOCAL_API_KEY=your_local_api_key  # optional if no auth configured
+   ```
 
-On first run, the `setup_qdrant` step will automatically index reference books from the `docs/` directory into your cloud cluster.
+On first run, the `setup_qdrant` step will automatically index reference books from the `docs/` directory into the local instance.
 
 ### 5. Configure Gmail OAuth (Optional)
 
@@ -252,9 +247,12 @@ Birth data is stored as JSON files in `src/natal_reader/subjects/`:
   "time_of_birth": "12:00",
   "place_of_birth": "City, Country",
   "latitude": 40.7128,
-  "longitude": -74.0060
+  "longitude": -74.0060,
+  "email": "subject@example.com"
 }
 ```
+
+Note: `email` is optional — if omitted, the Gmail draft will be created without a recipient address.
 
 ### Agent & Task Configuration
 

@@ -40,7 +40,7 @@ class GmailCrew():
 		return Agent(
 			config=self.agents_config['gmail_draft_agent'],
 			tools=[GmailAttachmentTool()],
-			llm=gpt41mini,
+			llm=gpt41,
 			verbose=True
 )
 
