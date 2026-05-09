@@ -44,7 +44,7 @@ class GoogleSearchTool(BaseTool):
         # Configure the generative AI model
         client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'))
 
-        model = 'gemini-2.0-flash-lite'
+        model = 'gemini-3.1-flash-lite'
 
 
 
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     search_tool = GoogleSearchTool(api_key=api_key, cx=cx)
     
     # Test search query
-    test_query = "the Snooker World Championships 2025"
+    test_query = "the Snooker World Championships 2026"
     
     # Execute the search
     results = search_tool._run(
