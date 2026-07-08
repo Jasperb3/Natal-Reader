@@ -1,10 +1,15 @@
 import json
+from itertools import combinations
 from immanuel import charts
 from immanuel.const import chart
 from immanuel.setup import settings
 from immanuel.classes.serialize import ToJSON
 from datetime import datetime
 
+# Primary house system — matches the Kerykeion wheel (kerykeion_chart_utils.py);
+# whole-sign houses are computed per object below as a supplement for Hellenistic
+# topical work, since Hellenistic technique is whole-sign-house-based.
+settings.house_system = chart.PLACIDUS
 
 # settings.objects.append(chart.PHOLUS)
 # settings.objects.append(chart.CERES)
@@ -19,8 +24,8 @@ settings.objects.append(chart.TRUE_SOUTH_NODE)
 settings.objects.append(chart.LILITH)
 # settings.objects.append(chart.TRUE_LILITH)
 # settings.objects.append(chart.INTERPOLATED_LILITH)
-# settings.objects.append(chart.SYZYGY)
-# settings.objects.append(chart.PART_OF_FORTUNE)
+settings.objects.append(chart.SYZYGY)
+settings.objects.append(chart.PART_OF_FORTUNE)
 # settings.objects.append(chart.PART_OF_SPIRIT)
 # settings.objects.append(chart.PART_OF_EROS)
 # settings.objects.append(chart.PRE_NATAL_SOLAR_ECLIPSE)
@@ -29,8 +34,50 @@ settings.objects.append(chart.LILITH)
 # settings.objects.append(chart.POST_NATAL_LUNAR_ECLIPSE)
 
 
-def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
-    subject = charts.Subject(dob, latitude, longitude)
+SIGN_RULERS = {
+    'Aries': 'Mars', 'Taurus': 'Venus', 'Gemini': 'Mercury',
+    'Cancer': 'Moon', 'Leo': 'Sun', 'Virgo': 'Mercury',
+    'Libra': 'Venus', 'Scorpio': 'Mars', 'Sagittarius': 'Jupiter',
+    'Capricorn': 'Saturn', 'Aquarius': 'Saturn', 'Pisces': 'Jupiter'
+}
+
+
+def find_mutual_receptions(positions: dict[str, str]) -> list[str]:
+    """positions maps traditional planet name -> sign name. Returns human-readable
+    mutual reception descriptions (planet A ruled by planet B's sign and vice versa)."""
+    receptions = []
+    names = list(positions.keys())
+    for i, planet_a_name in enumerate(names):
+        sign_a = positions[planet_a_name]
+        for planet_b_name in names[i + 1:]:
+            sign_b = positions[planet_b_name]
+            if SIGN_RULERS.get(sign_a) == planet_b_name and SIGN_RULERS.get(sign_b) == planet_a_name:
+                receptions.append(f"{planet_a_name} in {sign_a} ↔ {planet_b_name} in {sign_b}")
+    return receptions
+
+
+def iter_unique_aspects(chart_data: dict, object_map: dict):
+    """Yield each aspect pair once, deduped by object-ID pair (Immanuel's aspects
+    dict is bidirectional: Sun-Moon appears under both aspects[sun][moon] and
+    aspects[moon][sun])."""
+    processed_pairs = set()
+    for active_id_str, passive_dict in chart_data.get('aspects', {}).items():
+        for passive_id_str, aspect_details in passive_dict.items():
+            pair = tuple(sorted((active_id_str, passive_id_str)))
+            if pair in processed_pairs:
+                continue
+            processed_pairs.add(pair)
+
+            active_obj = object_map.get(active_id_str)
+            passive_obj = object_map.get(passive_id_str)
+            if not active_obj or not passive_obj:
+                continue
+
+            yield active_obj, passive_obj, aspect_details
+
+
+def get_natal_chart(dob: datetime, latitude: float, longitude: float, timezone: str | None = None) -> str:
+    subject = charts.Subject(dob, latitude, longitude, timezone=timezone)
     subject_natal = charts.Natal(subject)
     natal_data = json.dumps(subject_natal, cls=ToJSON, indent=4)
     chart_data = json.loads(natal_data)
@@ -44,7 +91,8 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
     coords_info = native_info.get("coordinates", {})
     
     output_lines.append(f"Birth Date/Time: {date_time_info.get('datetime', 'N/A')} ({date_time_info.get('timezone', 'N/A')})")
-    output_lines.append(f"Julian Day: {date_time_info.get('julian', 'N/A'):.5f}")
+    julian_day = date_time_info.get("julian")
+    output_lines.append(f"Julian Day: {julian_day:.5f}" if julian_day is not None else "Julian Day: N/A")
     output_lines.append(f"Sidereal Time: {date_time_info.get('sidereal_time', 'N/A')}")
     
     lat = coords_info.get("latitude", {})
@@ -54,7 +102,10 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
 
     # --- 2. Chart Details ---
     output_lines.append("--- Chart Details ---")
-    output_lines.append(f"House System: {chart_data.get('house_system', 'N/A')}")
+    output_lines.append(
+        f"House System: {chart_data.get('house_system', 'N/A')} "
+        "(primary; whole-sign houses provided per object for Hellenistic topics)"
+    )
     output_lines.append(f"Chart Shape: {chart_data.get('shape', 'N/A')}")
     output_lines.append(f"Diurnal/Nocturnal: {'Diurnal' if chart_data.get('diurnal', False) else 'Nocturnal'}")
     moon_phase_info = chart_data.get('moon_phase', {})
@@ -97,6 +148,16 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
     # Build a map for easy lookup by ID later (needed for aspects)
     object_map = {str(obj['index']): obj for obj in chart_data['objects'].values()}
 
+    # Whole-sign houses (supplementary, for Hellenistic topical work) are counted
+    # from the Ascendant's sign, regardless of the Placidus cusps used above.
+    asc_sign_number = obj_by_name.get('Asc', {}).get('sign', {}).get('number')
+
+    def _ordinal(n: int) -> str:
+        if 10 <= n % 100 <= 20:
+            suffix = "th"
+        else:
+            suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+        return f"{n}{suffix}"
 
     for obj in sorted_objects:
         obj_name = obj.get('name', 'Unknown Object')
@@ -115,7 +176,12 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
 
         house_info = obj.get('house', {})
         house_name = house_info.get('name', 'N/A')
-        output_lines.append(f"  House: {house_name}")
+        obj_sign_number = sign_info.get('number')
+        if asc_sign_number and obj_sign_number:
+            whole_sign_house = ((obj_sign_number - asc_sign_number) % 12) + 1
+            output_lines.append(f"  House: {house_name} (Placidus) | {_ordinal(whole_sign_house)} (whole sign)")
+        else:
+            output_lines.append(f"  House: {house_name}")
 
         decan_info = obj.get('decan', {})
         decan_name = decan_info.get('name', 'N/A')
@@ -174,46 +240,27 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
 
     # --- 5. Aspects ---
     output_lines.append("--- Aspects ---")
-    processed_aspects = set() # To avoid printing duplicates like Sun-Moon and Moon-Sun
 
-    # Iterate through all possible active objects that have aspects listed
-    for active_id_str, passive_dict in chart_data.get('aspects', {}).items():
-        # Iterate through all passive objects aspected by the active one
-        for passive_id_str, aspect_details in passive_dict.items():
-            
-            # Create a unique identifier for the pair, regardless of order
-            # Convert IDs to strings ensures consistent sorting if one is int and other str
-            pair = tuple(sorted((active_id_str, passive_id_str))) 
+    unique_aspects = list(iter_unique_aspects(chart_data, object_map))
 
-            if pair in processed_aspects:
-                continue # Skip if we've already processed this pair
+    for active_obj, passive_obj, aspect_details in unique_aspects:
+        active_name = active_obj.get('name', 'Unknown')
+        passive_name = passive_obj.get('name', 'Unknown')
 
-            processed_aspects.add(pair) # Mark this pair as processed
+        aspect_type = aspect_details.get('type', 'N/A')
+        orb = aspect_details.get('orb', 0.0)
+        diff_fmt = aspect_details.get('difference', {}).get('formatted', 'N/A')
+        move_fmt = aspect_details.get('movement', {}).get('formatted', 'N/A')
+        cond_fmt = aspect_details.get('condition', {}).get('formatted', 'N/A') # Associate/Dissociate
 
-            # Get object names from the map created earlier
-            active_obj = object_map.get(active_id_str)
-            passive_obj = object_map.get(passive_id_str)
+        # Format the aspect line
+        # Example: Sun Conjunction Moon (Orb: 5.23°, Diff: +05°14'02", Applying, Associate)
+        output_lines.append(
+            f"* {active_name} {aspect_type} {passive_name} "
+            f"(Orb: {orb:.2f}°, Diff: {diff_fmt}, {move_fmt}, {cond_fmt})"
+        )
 
-            if not active_obj or not passive_obj:
-                continue # Should not happen with valid data, but safety check
-
-            active_name = active_obj.get('name', f'ID {active_id_str}')
-            passive_name = passive_obj.get('name', f'ID {passive_id_str}')
-            
-            aspect_type = aspect_details.get('type', 'N/A')
-            orb = aspect_details.get('orb', 0.0)
-            diff_fmt = aspect_details.get('difference', {}).get('formatted', 'N/A')
-            move_fmt = aspect_details.get('movement', {}).get('formatted', 'N/A')
-            cond_fmt = aspect_details.get('condition', {}).get('formatted', 'N/A') # Associate/Dissociate
-
-            # Format the aspect line
-            # Example: Sun Conjunction Moon (Orb: 5.23°, Diff: +05°14'02", Applying, Associate)
-            output_lines.append(
-                f"* {active_name} {aspect_type} {passive_name} "
-                f"(Orb: {orb:.2f}°, Diff: {diff_fmt}, {move_fmt}, {cond_fmt})"
-            )
-
-    if not processed_aspects:
+    if not unique_aspects:
          output_lines.append("  (No major aspects listed or calculable in source data)")
          
     output_lines.append("-" * 25) # Separator
@@ -253,19 +300,11 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
     # --- 7. Pre-computed Patterns ---
     output_lines.append("--- Pre-computed Patterns ---")
 
-    # Helper: Traditional rulerships
-    sign_rulers = {
-        'Aries': 'Mars', 'Taurus': 'Venus', 'Gemini': 'Mercury',
-        'Cancer': 'Moon', 'Leo': 'Sun', 'Virgo': 'Mercury',
-        'Libra': 'Venus', 'Scorpio': 'Mars', 'Sagittarius': 'Jupiter',
-        'Capricorn': 'Saturn', 'Aquarius': 'Saturn', 'Pisces': 'Jupiter'
-    }
-
     # Chart Ruler Identification
     asc_obj = obj_by_name.get('Asc')
     if asc_obj:
         asc_sign = asc_obj.get('sign', {}).get('name', 'Unknown')
-        chart_ruler_name = sign_rulers.get(asc_sign, 'Unknown')
+        chart_ruler_name = SIGN_RULERS.get(asc_sign, 'Unknown')
         chart_ruler_obj = obj_by_name.get(chart_ruler_name)
 
         if chart_ruler_obj:
@@ -302,17 +341,29 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
             house_groups[house] = []
         house_groups[house].append(planet.get('name'))
 
-    stelliums_found = []
-    for sign, planet_list in sign_groups.items():
-        if len(planet_list) >= 3:
-            stelliums_found.append(f"{sign} ({', '.join(planet_list)})")
+    # Sign and house stelliums are distinct findings and are both reported, even
+    # when the same planets form both (that coincidence is itself significant).
+    sign_stelliums = [
+        (sign, frozenset(planet_list))
+        for sign, planet_list in sign_groups.items()
+        if len(planet_list) >= 3
+    ]
+    house_stelliums = [
+        (house, frozenset(planet_list))
+        for house, planet_list in house_groups.items()
+        if len(planet_list) >= 3
+    ]
 
-    for house, planet_list in house_groups.items():
-        if len(planet_list) >= 3:
-            # Only add if not already covered by sign stellium
-            planets_str = ', '.join(planet_list)
-            if f"({planets_str})" not in str(stelliums_found):
-                stelliums_found.append(f"{house} ({planets_str})")
+    stelliums_found = []
+    for sign, members in sign_stelliums:
+        same_as_house = any(members == house_members for _, house_members in house_stelliums)
+        suffix = " — same planets by sign and house" if same_as_house else ""
+        stelliums_found.append(f"Sign stellium: {sign} ({', '.join(sorted(members))}){suffix}")
+
+    for house, members in house_stelliums:
+        same_as_sign = any(members == sign_members for _, sign_members in sign_stelliums)
+        suffix = " — same planets by sign and house" if same_as_sign else ""
+        stelliums_found.append(f"House stellium: {house} ({', '.join(sorted(members))}){suffix}")
 
     output_lines.append(f"\nStelliums Detected: {len(stelliums_found)}")
     if stelliums_found:
@@ -340,23 +391,12 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
 
     # Mutual Receptions (traditional planets only)
     traditional_planets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']
-    mutual_receptions = []
-
-    for i, planet_a_name in enumerate(traditional_planets):
-        planet_a = obj_by_name.get(planet_a_name)
-        if not planet_a:
-            continue
-        sign_a = planet_a.get('sign', {}).get('name')
-
-        for planet_b_name in traditional_planets[i+1:]:
-            planet_b = obj_by_name.get(planet_b_name)
-            if not planet_b:
-                continue
-            sign_b = planet_b.get('sign', {}).get('name')
-
-            # Check if planet A is in planet B's sign AND planet B is in planet A's sign
-            if sign_rulers.get(sign_a) == planet_b_name and sign_rulers.get(sign_b) == planet_a_name:
-                mutual_receptions.append(f"{planet_a_name} in {sign_a} ↔ {planet_b_name} in {sign_b}")
+    traditional_positions = {
+        name: obj_by_name[name].get('sign', {}).get('name')
+        for name in traditional_planets
+        if name in obj_by_name
+    }
+    mutual_receptions = find_mutual_receptions(traditional_positions)
 
     output_lines.append(f"\nMutual Receptions: {len(mutual_receptions)}")
     if mutual_receptions:
@@ -365,22 +405,16 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
     else:
         output_lines.append("  None")
 
-    # Tight Aspects Summary (orb < 2°)
+    # Tight Aspects Summary (orb < 2°) — reuses the already-deduped unique_aspects
+    # list, so this can no longer diverge from the main Aspects section (P0-1).
     tight_aspects = []
-    for active_id_str, passive_dict in chart_data.get('aspects', {}).items():
-        for passive_id_str, aspect_details in passive_dict.items():
-            orb = aspect_details.get('orb', 999)
-            if orb < 2.0:
-                active_obj = object_map.get(active_id_str)
-                passive_obj = object_map.get(passive_id_str)
-                if active_obj and passive_obj:
-                    active_name = active_obj.get('name', f'ID {active_id_str}')
-                    passive_name = passive_obj.get('name', f'ID {passive_id_str}')
-                    aspect_type = aspect_details.get('type', 'N/A')
-                    tight_aspects.append(f"{active_name} {aspect_type} {passive_name} (Orb: {orb:.2f}°)")
-
-    # Remove duplicates (since aspects are bidirectional)
-    tight_aspects = list(set(tight_aspects))
+    for active_obj, passive_obj, aspect_details in unique_aspects:
+        orb = aspect_details.get('orb', 999)
+        if orb < 2.0:
+            active_name = active_obj.get('name', 'Unknown')
+            passive_name = passive_obj.get('name', 'Unknown')
+            aspect_type = aspect_details.get('type', 'N/A')
+            tight_aspects.append(f"{active_name} {aspect_type} {passive_name} (Orb: {orb:.2f}°)")
 
     output_lines.append(f"\nTight Aspects (Orb < 2°): {len(tight_aspects)}")
     if tight_aspects:
@@ -388,6 +422,80 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float) -> str:
             output_lines.append(f"  - {aspect}")
     else:
         output_lines.append("  None")
+
+    # Anaretic Degree Flags (29th degree of a sign — critical/urgent placements)
+    anaretic_placements = [
+        f"{obj.get('name')} ({obj.get('sign', {}).get('name', 'N/A')})"
+        for obj in sorted_objects
+        if obj.get('sign_longitude', {}).get('degrees') == 29
+    ]
+    output_lines.append(f"\nAnaretic Placements (29th degree): {len(anaretic_placements)}")
+    if anaretic_placements:
+        for placement in anaretic_placements:
+            output_lines.append(f"  - {placement}")
+    else:
+        output_lines.append("  None detected")
+
+    # Aspect Configurations (T-squares, grand trines, grand crosses) among the
+    # 10 planets, computed from the deduped aspect list so the LLM doesn't have
+    # to infer these from raw aspect lines.
+    aspect_lookup = {}
+    for active_obj, passive_obj, aspect_details in unique_aspects:
+        a_name, p_name = active_obj.get('name'), passive_obj.get('name')
+        aspect_type = aspect_details.get('type')
+        if a_name and p_name and aspect_type:
+            aspect_lookup[frozenset((a_name, p_name))] = aspect_type
+
+    def _aspect_between(name_a: str, name_b: str) -> str | None:
+        return aspect_lookup.get(frozenset((name_a, name_b)))
+
+    configuration_planets = [p.get('name') for p in planets]
+    t_squares = []
+    grand_trines = []
+    grand_crosses = []
+
+    for a, b, c in combinations(configuration_planets, 3):
+        ab, ac, bc = _aspect_between(a, b), _aspect_between(a, c), _aspect_between(b, c)
+        aspects_present = [ab, ac, bc]
+        if aspects_present.count('Opposition') == 1 and aspects_present.count('Square') == 2:
+            t_squares.append(f"{a}, {b}, {c}")
+        if ab == 'Trine' and ac == 'Trine' and bc == 'Trine':
+            grand_trines.append(f"{a}, {b}, {c}")
+
+    for four in combinations(configuration_planets, 4):
+        # Of the 3 ways to split 4 planets into two diagonal (opposition) pairs,
+        # check each: remaining 4 cross-connections must all be squares.
+        diagonal_partitions = [
+            ((four[0], four[1]), (four[2], four[3])),
+            ((four[0], four[2]), (four[1], four[3])),
+            ((four[0], four[3]), (four[1], four[2])),
+        ]
+        for (d1a, d1b), (d2a, d2b) in diagonal_partitions:
+            if _aspect_between(d1a, d1b) != 'Opposition' or _aspect_between(d2a, d2b) != 'Opposition':
+                continue
+            sides = [(d1a, d2a), (d1a, d2b), (d1b, d2a), (d1b, d2b)]
+            if all(_aspect_between(x, y) == 'Square' for x, y in sides):
+                grand_crosses.append(f"{four[0]}, {four[1]}, {four[2]}, {four[3]}")
+                break
+
+    output_lines.append(f"\nAspect Configurations:")
+    output_lines.append(f"  T-Squares: {len(t_squares)}")
+    for config in t_squares:
+        output_lines.append(f"    - {config}")
+    if not t_squares:
+        output_lines.append("    None detected")
+
+    output_lines.append(f"  Grand Trines: {len(grand_trines)}")
+    for config in grand_trines:
+        output_lines.append(f"    - {config}")
+    if not grand_trines:
+        output_lines.append("    None detected")
+
+    output_lines.append(f"  Grand Crosses: {len(grand_crosses)}")
+    for config in grand_crosses:
+        output_lines.append(f"    - {config}")
+    if not grand_crosses:
+        output_lines.append("    None detected")
 
     output_lines.append("-" * 25) # Separator
     output_lines.append("--- End of Natal Chart ---")

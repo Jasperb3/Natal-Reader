@@ -32,7 +32,12 @@ class NatalFlow(Flow[NatalState]):
     @listen(setup_qdrant)
     def get_natal_chart_data(self):
         print("Getting natal chart data")
-        natal_chart = get_natal_chart(self.state.date_of_birth, self.state.birthplace_latitude, self.state.birthplace_longitude)
+        natal_chart = get_natal_chart(
+            self.state.date_of_birth,
+            self.state.birthplace_latitude,
+            self.state.birthplace_longitude,
+            self.state.birthplace_timezone,
+        )
         self.state.natal_chart = natal_chart
         return
 

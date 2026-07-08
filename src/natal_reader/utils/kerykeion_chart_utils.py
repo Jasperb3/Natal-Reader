@@ -16,7 +16,8 @@ def get_kerykeion_subject(name: str, year: int, month: int, day: int, hour: int,
         lat=latitude,
         tz_str=timezone,
         online=False,
-        disable_chiron_and_lilith=False
+        disable_chiron_and_lilith=False,
+        houses_system_identifier="P"  # Placidus — matches immanuel_natal_chart.py's settings.house_system
     )
 
     return subject

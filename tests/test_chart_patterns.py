@@ -17,7 +17,7 @@ TRADITIONAL_RULERS = {
 
 
 def test_tight_aspects_are_unique(chart_text):
-    section = chart_text.split("Tight Aspects (Orb < 2°):")[1].split("-" * 25)[0]
+    section = chart_text.split("Tight Aspects (Orb < 2°):")[1].split("\n\nAnaretic Placements")[0]
     lines = [line.strip("- ").strip() for line in section.splitlines() if line.strip().startswith("-")]
 
     pattern = re.compile(r"^(.+?) (Conjunction|Opposition|Square|Trine|Sextile|Quincunx) (.+?) \(Orb: [\d.]+°\)$")
@@ -59,3 +59,60 @@ def test_timezone_localization(chart_text):
 
 def test_stellium_section_exists(chart_text):
     assert "Stelliums Detected:" in chart_text
+
+
+def test_whole_sign_house_shown(chart_text):
+    assert re.search(r"House: \d+(st|nd|rd|th) House \(Placidus\) \| \d+(st|nd|rd|th) \(whole sign\)", chart_text)
+
+
+def test_house_system_is_placidus(chart_text):
+    match = re.search(r"House System: (.+)", chart_text)
+    assert match
+    assert match.group(1).startswith("Placidus")
+
+
+def test_part_of_fortune_and_syzygy_present(chart_text):
+    assert "* Part of Fortune (Point)" in chart_text
+    assert "* Syzygy (Point)" in chart_text
+
+
+def test_anaretic_section_present(chart_text):
+    assert "Anaretic Placements (29th degree):" in chart_text
+
+
+def test_configurations_section_present(chart_text):
+    assert "Aspect Configurations:" in chart_text
+    assert "T-Squares:" in chart_text
+    assert "Grand Trines:" in chart_text
+    assert "Grand Crosses:" in chart_text
+
+
+def test_explicit_timezone_matches_inferred(chart_text):
+    from datetime import datetime
+
+    from natal_reader.utils.immanuel_natal_chart import get_natal_chart
+    from conftest import FIXTURE_SUBJECT
+
+    dob = datetime.strptime(FIXTURE_SUBJECT["date_of_birth"], "%Y-%m-%d %H:%M:%S")
+    bp = FIXTURE_SUBJECT["birthplace"]
+    explicit_tz_text = get_natal_chart(dob, bp["latitude"], bp["longitude"], timezone=bp["timezone"])
+
+    assert explicit_tz_text == chart_text
+
+
+def test_find_mutual_receptions():
+    from natal_reader.utils.immanuel_natal_chart import find_mutual_receptions
+
+    # Mars in Cancer (ruled by Moon) and Moon in Aries (ruled by Mars): mutual reception.
+    positions = {"Sun": "Leo", "Moon": "Aries", "Mars": "Cancer", "Venus": "Taurus"}
+    receptions = find_mutual_receptions(positions)
+
+    assert len(receptions) == 1
+    assert "Moon" in receptions[0] and "Mars" in receptions[0]
+
+
+def test_find_mutual_receptions_none():
+    from natal_reader.utils.immanuel_natal_chart import find_mutual_receptions
+
+    positions = {"Sun": "Leo", "Moon": "Taurus", "Mars": "Cancer"}
+    assert find_mutual_receptions(positions) == []
