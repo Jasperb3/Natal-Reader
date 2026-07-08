@@ -12,7 +12,17 @@ load_dotenv()
 RED = "\033[91m"
 RESET = "\033[0m" 
 
-gmaps = googlemaps.Client(key=os.getenv("GMAPS_API_KEY"))
+_gmaps_client = None
+
+
+def _gmaps():
+    """Lazily create the Google Maps client so importing this module (or
+    natal_reader.utils.models) doesn't require GMAPS_API_KEY to be set."""
+    global _gmaps_client
+    if _gmaps_client is None:
+        _gmaps_client = googlemaps.Client(key=os.getenv("GMAPS_API_KEY"))
+    return _gmaps_client
+
 
 # Helper function to format display name from filename
 def _format_display_name(filename):
@@ -111,7 +121,7 @@ def get_timezone(latitude, longitude):
     # Primary: Google Maps Timezone API
     try:
         timestamp = datetime.now().timestamp()
-        timezone_result = gmaps.timezone((latitude, longitude), timestamp=timestamp)
+        timezone_result = _gmaps().timezone((latitude, longitude), timestamp=timestamp)
         if timezone_result and 'timeZoneId' in timezone_result:
             timezone_str = timezone_result['timeZoneId']
     except Exception as e:
@@ -141,7 +151,7 @@ def get_place_of_birth():
     while True:
         try:
             address = input("Enter the place of birth: ")
-            geocode_result = gmaps.geocode(address)
+            geocode_result = _gmaps().geocode(address)
             if not geocode_result:
                  # Format error message in red
                 print(f"{RED}Invalid address. Could not geocode. Please enter a valid address.{RESET}")

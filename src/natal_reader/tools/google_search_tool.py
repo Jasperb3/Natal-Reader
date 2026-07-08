@@ -23,10 +23,10 @@ class GoogleSearchTool(BaseTool):
     api_key: str
     cx: str
     
-    def __init__(self, api_key: str, cx: str):
+    def __init__(self, api_key: str = None, cx: str = None):
+        api_key = api_key or os.getenv("GOOGLE_SEARCH_API_KEY")
+        cx = cx or os.getenv("SEARCH_ENGINE_ID")
         super().__init__(api_key=api_key, cx=cx)
-        self.api_key = os.getenv("GOOGLE_SEARCH_API_KEY")
-        self.cx = os.getenv("SEARCH_ENGINE_ID")
 
     def _summarize_text(self, text: str) -> str:
         """

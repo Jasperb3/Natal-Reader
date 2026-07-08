@@ -39,22 +39,22 @@ class QdrantSearchToolSchema(BaseModel):
 
 class QdrantSearchTool(BaseTool):
     """
-    Custom tool to search a Qdrant database for relevant information,
-    specifically designed for the 'stock_knowledge' collection.
+    Custom tool to search the astrology reference docs Qdrant collection
+    (astro_knowledge_base) for relevant information.
     """
-    model_config = {"arbitrary_types_allowed": True}
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     client: QdrantClient = None
     name: str = "QdrantSearchTool"
     description: str = (
         "A tool to search astrology reference docs for relevant information"
     )
     args_schema: Type[BaseModel] = QdrantSearchToolSchema
-    collection_name: str = Field(
-        default=os.environ.get("QDRANT_COLLECTION_NAME"), description="Name of the Qdrant collection to search."
+    collection_name: Optional[str] = Field(
+        default=None, description="Name of the Qdrant collection to search."
     )
     limit: int = Field(default=8, description="Maximum number of results to return.")
     score_threshold: float = Field(
-        default=0.3, description="Minimum similarity score threshold."
+        default=0.5, description="Minimum similarity score threshold."
     )
     qdrant_url: Optional[str] = Field(
         default=None, description="The URL of the Qdrant server."
@@ -66,16 +66,15 @@ class QdrantSearchTool(BaseTool):
         default=None,
         description="Optional custom embedding function. Defaults to Gemini embeddings.",
     )
-    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.qdrant_url = os.environ.get("QDRANT_LOCAL_URL")
-        self.qdrant_api_key = os.environ.get("QDRANT_LOCAL_API_KEY")
-        self.collection_name = os.environ.get(
+        self.qdrant_url = self.qdrant_url or os.environ.get("QDRANT_LOCAL_URL")
+        self.qdrant_api_key = self.qdrant_api_key or os.environ.get("QDRANT_LOCAL_API_KEY")
+        self.collection_name = self.collection_name or os.environ.get(
             "QDRANT_COLLECTION_NAME", "astro_knowledge"
-        )  # Use env, fallback to default
+        )
 
         if not self.qdrant_url or not self.qdrant_api_key:
             raise ValueError(
@@ -120,16 +119,16 @@ class QdrantSearchTool(BaseTool):
             if query_vector is None:
                 return "Error: Could not generate embedding for the query."
 
-            search_results = self.client.search(
+            search_results = self.client.query_points(
                 collection_name=self.collection_name,
-                query_vector=query_vector,
+                query=query_vector,
                 query_filter=search_filter,
                 limit=self.limit,
                 score_threshold=self.score_threshold,
             )
 
             results = []
-            for point in search_results:
+            for point in search_results.points:
                 results.append(
                     {
                         "metadata": point.payload.get("source", ""),

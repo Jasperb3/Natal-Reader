@@ -20,8 +20,9 @@ dependencies = [
     "md2pdf>=1.0.1",
     "selenium>=4.32.0",
     "googlemaps>=4.10.0",
-    "linkup-sdk>=0.2.4",
     "qdrant-client>=1.13.0",
+    "google-api-python-client>=2.100.0",
+    "timezonefinder>=5.2,<6.dev0",
 ]
 
 [project.scripts]

@@ -1,4 +1,4 @@
-from natal_reader.utils.markdown_tagger import tag_report
+from natal_reader.utils.markdown_tagger import tag_report, extract_sections_by_heading
 
 SAMPLE_REPORT = """Some internal commentary that should never appear in the output.
 
@@ -72,6 +72,19 @@ def test_idempotent_on_second_pass():
     once = tag_report(SAMPLE_REPORT)
     twice = tag_report(once)
     assert once == twice
+
+
+def test_extract_sections_by_heading_returns_only_matched_sections():
+    tagged = tag_report(SAMPLE_REPORT)
+    excerpt = extract_sections_by_heading(tagged, ["introduction"])
+
+    assert '<h2 id="introduction">' in excerpt
+    assert '<h2 id="glossary">' not in excerpt
+
+
+def test_extract_sections_by_heading_no_match_returns_empty():
+    tagged = tag_report(SAMPLE_REPORT)
+    assert extract_sections_by_heading(tagged, ["nonexistent-section"]) == ""
 
 
 def test_bold_colon_outside_glossary_not_converted():

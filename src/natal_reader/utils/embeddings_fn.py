@@ -4,19 +4,13 @@ import os
 
 load_dotenv()
 
+_genai_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+
 def custom_gemini_embedding_fn(text):
     """Generate embeddings for text using Gemini API."""
-
-    gemini_api_key = os.getenv("GEMINI_API_KEY")
-
-    genai_client = genai.Client(api_key=gemini_api_key)
-
     try:
-        if not genai_client:
-            print("❌ Gemini client not initialized. Cannot generate embeddings.")
-            return None
-
-        result = genai_client.models.embed_content(
+        result = _genai_client.models.embed_content(
             model="gemini-embedding-001",
             contents=text
         )

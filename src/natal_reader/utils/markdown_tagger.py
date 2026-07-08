@@ -199,6 +199,25 @@ def _inject_strength_spans(md: str) -> str:
     return md
 
 
+def extract_sections_by_heading(tagged_report: str, heading_keywords: list[str]) -> str:
+    """Return only the <h2> sections whose id or title contains any of
+    heading_keywords (case-insensitive). Used to give the email-writing task
+    just the Introduction + Guidance sections instead of the full 8-12k-word
+    report (P2-8) — email_writing_task only needs enough to write a subject
+    line and short body."""
+    sections = re.split(r"(?=<h2 )", tagged_report)
+    matched = []
+    for section in sections:
+        heading_match = re.match(r'<h2 id="([^"]*)">([^<]*)</h2>', section)
+        if not heading_match:
+            continue
+        heading_id, heading_title = heading_match.groups()
+        haystack = f"{heading_id} {heading_title}".lower()
+        if any(keyword.lower() in haystack for keyword in heading_keywords):
+            matched.append(section.strip())
+    return "\n\n".join(matched)
+
+
 def tag_report(md: str) -> str:
     """Deterministic replacement for formatting_crew's LLM markdown-tagging pass
     (P1-4): every rule in formatting_crew/config/tasks.yaml is mechanical, so

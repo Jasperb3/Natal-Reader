@@ -1,28 +1,29 @@
-import os
-import json
 import time
-from datetime import datetime
 from pathlib import Path
+from google.auth.exceptions import RefreshError
 from crewai.flow import Flow, listen, start
 from natal_reader.utils.models import NatalState
+from natal_reader.utils.subject_selection import get_subject_data
 from natal_reader.utils.qdrant_setup import Setup
 from natal_reader.utils.decorators import track_token_usage, timeit, timings_file_path
 from natal_reader.utils.immanuel_natal_chart import get_natal_chart, get_chart_facts
 from natal_reader.utils.kerykeion_chart_utils import get_kerykeion_subject, get_kerykeion_natal_chart
 from natal_reader.utils.convert_to_pdf import convert_md_to_pdf
 from natal_reader.utils.report_verifier import verify_report
-from natal_reader.utils.markdown_tagger import tag_report
-from natal_reader.utils.constants import TIMESTAMP, CHARTS_DIR, NOW_DT, OUTPUT_DIR, CREW_OUTPUTS_DIR
+from natal_reader.utils.markdown_tagger import tag_report, extract_sections_by_heading
+from natal_reader.utils.constants import TIMESTAMP, CHARTS_DIR, OUTPUT_DIR, CREW_OUTPUTS_DIR
 from natal_reader.crews.analysis_crew.analysis_crew import AnalysisCrew
 from natal_reader.crews.review_crew.review_crew import ReviewCrew
 from natal_reader.crews.gmail_crew.gmail_crew import GmailCrew
 from crewai import Crew, Process
 
-beginning_time = time.time()
+beginning_time: float | None = None
 
 GLOSSARY_REFERENCE = (
     Path(__file__).parent / "utils" / "glossary_reference.md"
 ).read_text()
+
+token_path = Path(__file__).parent / "utils" / "token.json"
 
 class NatalFlow(Flow[NatalState]):
 
@@ -210,30 +211,20 @@ class NatalFlow(Flow[NatalState]):
     @track_token_usage
     @listen(save_natal_analysis)
     def send_natal_analysis(self):
+        if not self.state.email:
+            print("No email address on file for this subject — skipping Gmail draft.")
+            return None
+
         print("Drafting email...")
 
-        try:
-            token_file_path = "src/natal_reader/utils/token.json"
-            with open(token_file_path, "r") as f:
-                token_data = json.load(f)
-                expiry_date = token_data.get("expiry")
-                if expiry_date:
-                    expiry_date = datetime.fromisoformat(expiry_date)
-                    if expiry_date < NOW_DT:
-                        print("Token expired. Re-authentication required.")
-                        os.remove(token_file_path)
-
-        except FileNotFoundError:
-            print("Token file not found. Re-authentication required.")
-        except json.JSONDecodeError:
-            print("Error decoding token file. Re-authentication required.")
-            os.remove(token_file_path)
-        except Exception as e:
-            print(f"Unexpected error: {str(e)}")
-
+        # email_writing_task only needs enough to write a subject line and
+        # short body — passing the full 8-12k-word report wastes tokens.
+        report_excerpt = extract_sections_by_heading(
+            self.state.final_natal_analysis, ["introduction", "guidance"]
+        ) or self.state.final_natal_analysis
 
         inputs = {
-            "report_text": self.state.final_natal_analysis,
+            "report_text": report_excerpt,
             "report_pdf": str(self.state.report_pdf),
             "client": self.state.name,
             "sender": "Ben Jasper",
@@ -241,11 +232,19 @@ class NatalFlow(Flow[NatalState]):
             "today": self.state.today
         }
 
-        email_result = (
-            GmailCrew()
-            .crew()
-            .kickoff(inputs=inputs)
-        )
+        try:
+            email_result = (
+                GmailCrew()
+                .crew()
+                .kickoff(inputs=inputs)
+            )
+        except RefreshError:
+            # authenticate_gmail() already refreshes a merely-expired token;
+            # a RefreshError means the refresh token itself is invalid, so
+            # force a full re-auth on the next run.
+            token_path.unlink(missing_ok=True)
+            print("Gmail token refresh failed — deleted token.json. Re-run to re-authenticate.")
+            return None
 
         if email_result.raw:
             print("Email draft complete")
@@ -269,7 +268,12 @@ class NatalFlow(Flow[NatalState]):
         
 
 def kickoff():
-    natal_flow = NatalFlow()
+    global beginning_time
+    beginning_time = time.time()
+
+    subject_data = get_subject_data()
+    state = NatalState.from_subject(subject_data)
+    natal_flow = NatalFlow(**state.model_dump())
     natal_flow.kickoff()
 
 

@@ -215,7 +215,9 @@ class Setup:
         return (md_files[0], text_chunks)
 
     def generate_gemini_embeddings(self, text_chunks):
-        """Generate embeddings for text chunks using Gemini API."""
+        """Generate embeddings for text chunks using Gemini API, batched
+        (100 chunks/call) instead of one call per chunk — indexing a full book
+        one-chunk-at-a-time with a fixed sleep took hours."""
         print("Generating Gemini embeddings...")
 
         if not self.genai_client:
@@ -224,11 +226,8 @@ class Setup:
 
         embeddings_with_text = []
         failed_chunks = 0
-        batch_size = 10  # Process in batches to avoid overwhelming the API
-        requests_per_minute = 150
-        delay_between_requests = (
-            60.0 / requests_per_minute
-        )  # Calculate delay in seconds
+        batch_size = 100
+        max_retries = 5
 
         for i in range(0, len(text_chunks), batch_size):
             batch = text_chunks[i : i + batch_size]
@@ -237,33 +236,31 @@ class Setup:
                 end="\r",
             )
 
-            for chunk in batch:
+            for attempt in range(max_retries):
                 try:
-                    # Generate embedding using Gemini
                     result = self.genai_client.models.embed_content(
-                        model="gemini-embedding-001", contents=chunk["text"]
+                        model="gemini-embedding-001",
+                        contents=[chunk["text"] for chunk in batch],
                     )
-
-                    # Correctly access the embedding values
-                    embedding_values = result.embeddings[
-                        0
-                    ].values  # Access the first embedding and its values
-
-                    # Add embedding to the chunk data
-                    embeddings_with_text.append(
-                        {
-                            "text": chunk["text"],
-                            "source": chunk["source"],
-                            "embedding": embedding_values,
-                        }
-                    )
-                    time.sleep(delay_between_requests)  # delay
+                    for chunk, embedding in zip(batch, result.embeddings):
+                        embeddings_with_text.append(
+                            {
+                                "text": chunk["text"],
+                                "source": chunk["source"],
+                                "embedding": embedding.values,
+                            }
+                        )
+                    break
                 except Exception as e:
-                    failed_chunks += 1
-                    print(
-                        f"❌ Error generating embedding for chunk from {chunk['source']}: {e}"
-                    )
-                    # Continue processing other chunks despite this error
+                    is_rate_limit = "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e)
+                    if is_rate_limit and attempt < max_retries - 1:
+                        backoff = 2 ** attempt
+                        print(f"⚠️ Rate limited, retrying batch in {backoff}s...")
+                        time.sleep(backoff)
+                        continue
+                    failed_chunks += len(batch)
+                    print(f"❌ Error generating embeddings for batch from {batch[0]['source']}: {e}")
+                    break
 
         if failed_chunks > 0:
             print(
