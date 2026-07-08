@@ -82,11 +82,14 @@ natal_reader/
 │   ├── crews/
 │   │   ├── analysis_crew/     # Chart interpretation & report writing
 │   │   ├── review_crew/       # Factual verification & enhancement
-│   │   ├── formatting_crew/   # HTML markup for PDF styling
+│   │   ├── formatting_crew/   # Unused — HTML markup now done by utils/markdown_tagger.py
 │   │   └── gmail_crew/        # Email composition & delivery
 │   ├── utils/
-│   │   ├── immanuel_natal_chart.py   # Chart calculation with pre-computed patterns
+│   │   ├── immanuel_natal_chart.py   # Chart calculation with pre-computed patterns + get_chart_facts()
 │   │   ├── kerykeion_chart_utils.py  # Chart wheel visualization
+│   │   ├── report_verifier.py        # Deterministic factual verification against chart_facts
+│   │   ├── markdown_tagger.py        # Deterministic HTML tagging for PDF styling
+│   │   ├── chunking.py               # Heading-aware markdown chunking for the RAG pipeline
 │   │   ├── qdrant_setup.py           # Vector DB indexing
 │   │   ├── decorators.py             # Timing & token tracking
 │   │   └── models.py                 # Pydantic state management
@@ -125,14 +128,14 @@ Natal Reader executes a 9-step sequential pipeline via `NatalFlow`:
          │
          ▼
 ┌─────────────────────────┐
-│ 4. review_analysis      │ ─── ReviewCrew: factual verification
-│   (Gemini)   │     using raw chart data for accuracy
-└────────┬────────────────┘
+│ 4. review_analysis      │ ─── ReviewCrew: critic (temp 0.2) + enhancer,
+│   (Gemini)   │     then deterministic verify_report() against
+└────────┬────────────────┘    chart_facts, with a targeted correction pass
          │
          ▼
 ┌─────────────────────────┐
-│ 5. format_analysis      │ ─── FormattingCrew: apply HTML markup
-│   (GPT-4.1-mini, temp 0.3)│    for PDF styling
+│ 5. format_analysis      │ ─── Deterministic markdown_tagger.tag_report()
+│   (no LLM call)          │    applies HTML markup for PDF styling
 └────────┬────────────────┘
          │
          ▼
@@ -175,14 +178,17 @@ The system will:
 
 ## Crews
 
-Natal Reader uses four specialized AI crews:
+Natal Reader uses three specialized AI crews, plus a deterministic formatting step:
 
 | Crew | Model | Agents | Purpose |
 |------|-------|--------|---------|
 | **AnalysisCrew** | GPT-4.1 | interpreter, writer | Single-pass unified analysis combining Hellenistic, Psychological, and Humanistic traditions |
-| **ReviewCrew** | Gemini 3.1 | critic, enhancer | Factual verification of degrees/aspects + quality enhancement |
-| **FormattingCrew** | GPT-4.1-mini | markdown_enhancer | HTML markup for PDF styling (temperature: 0.3) |
+| **ReviewCrew** | Gemini 3.1 (critic: temp 0.2, enhancer: temp 0.7) | critic, enhancer | Factual verification of degrees/aspects + quality enhancement, followed by deterministic `verify_report()` |
 | **GmailCrew** | GPT-4.1 | email_writer, gmail_drafter | Compose and draft email with PDF attachment |
+
+HTML markup for PDF styling is applied by `utils/markdown_tagger.py` (no LLM call) —
+the old `FormattingCrew` regenerated the entire report through an LLM a third time
+just to inject `<span>` tags; `formatting_crew/` remains on disk but is unused.
 
 ### Analysis Crew
 
@@ -222,10 +228,12 @@ The chart calculation step identifies key patterns upfront:
 ### RAG Pipeline
 
 Astrology reference books are:
-1. Chunked into semantic segments
-2. Embedded using Gemini `gemini-embedding-001`
-3. Stored in Qdrant (similarity threshold: 0.3, limit: 8 results)
+1. Chunked heading-aware (split on headings first, then a 1500-char window per section, each chunk prefixed with its source + heading path)
+2. Embedded using Gemini `gemini-embedding-001`, batched 100 chunks/call
+3. Stored in Qdrant (similarity threshold: 0.5, limit: 8 results)
 4. Queried by agents during analysis for authoritative interpretations
+
+Transit-focused books live in `astro_docs/transits/` and are excluded from indexing. To fully re-chunk and re-embed the corpus after a chunking change, run `Setup.reindex_all()` manually (not automatic — it re-embeds everything, which costs API quota/time).
 
 ### Token & Timing Tracking
 
