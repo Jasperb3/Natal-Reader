@@ -12,6 +12,7 @@ from qdrant_client.models import (
     MatchValue,
 )
 from natal_reader.utils.constants import DOCS_DIR
+from natal_reader.utils.chunking import chunk_markdown
 import time
 
 
@@ -46,6 +47,39 @@ class Setup:
 
         # Keep track of processed files to avoid duplicates
         self.processed_files = set()
+
+    def reindex_all(self):
+        """Force-reprocess every file in astro_docs/, purging each source's
+        existing chunks first. NOT called automatically — existing chunks
+        predate heading-aware chunking (P1-2) and the source-exists skip in
+        process_new_markdown_files() means they won't be upgraded on their
+        own. Run manually when re-embedding cost/quota is acceptable."""
+        md_files = list(DOCS_DIR.glob("*.md"))
+        if not md_files:
+            print("No markdown files found to reindex.")
+            return 0
+
+        self.purge_sources([md_file.name for md_file in md_files])
+        self.processed_files.clear()
+
+        reindexed = 0
+        for md_file in md_files:
+            try:
+                file_path_obj, text_chunks = self.extract_text_from_markdown([md_file])
+                if not text_chunks:
+                    print(f"⚠️ No text chunks extracted from {md_file}")
+                    continue
+                embeddings_with_text = self.generate_gemini_embeddings(text_chunks)
+                if not embeddings_with_text:
+                    print(f"⚠️ No embeddings generated for {md_file}")
+                    continue
+                if self.store_in_qdrant(embeddings_with_text):
+                    reindexed += 1
+                    self.processed_files.add(str(md_file))
+            except Exception as e:
+                print(f"❌ Error reindexing {md_file}: {e}")
+
+        return reindexed
 
     def process_new_markdown_files(self):
         """Find and process new markdown files in the astro_docs directory."""
@@ -132,6 +166,31 @@ class Setup:
 
         return len(new_files)
 
+    def purge_sources(self, source_names: list[str]) -> int:
+        """Delete all points whose 'source' payload field matches one of
+        source_names. Used to remove chunks from documents that have been
+        moved/removed from astro_docs/ (e.g. the transit corpus, P1-1) since
+        the source-exists skip in process_new_markdown_files() only prevents
+        re-adding, not removing what's already indexed."""
+        if not self.qdrant_client or not self.qdrant_client.collection_exists(self.collection_name):
+            print("⚠️ Qdrant client not initialized or collection does not exist. Nothing to purge.")
+            return 0
+
+        total_deleted = 0
+        for source_name in source_names:
+            count_result = self.qdrant_client.count(
+                collection_name=self.collection_name,
+                count_filter=Filter(must=[FieldCondition(key="source", match=MatchValue(value=source_name))]),
+            )
+            if count_result.count == 0:
+                continue
+            self.qdrant_client.delete(
+                collection_name=self.collection_name,
+                points_selector=Filter(must=[FieldCondition(key="source", match=MatchValue(value=source_name))]),
+            )
+            print(f"Purged {count_result.count} chunks for source '{source_name}'")
+            total_deleted += count_result.count
+        return total_deleted
 
     def extract_text_from_markdown(self, md_files):
         """Extract text from markdown files in the astro_docs directory."""
@@ -160,51 +219,7 @@ class Setup:
                         print(f"⚠️ Empty file: {md_file}")
                         continue
 
-                    # Process the content into chunks with overlap
-                    chunk_size = 1500
-                    chunk_overlap = 250
-                    current_position = 0
-                    content_length = len(content)
-
-                    while current_position < content_length:
-                        end_position = min(
-                            current_position + chunk_size, content_length
-                        )
-
-                        if end_position < content_length:
-                            look_back_range = min(100, chunk_size // 10)
-                            natural_break_pos = content.rfind(
-                                "\n\n", end_position - look_back_range, end_position
-                            )
-
-                            if natural_break_pos != -1:
-                                end_position = natural_break_pos
-                            else:
-                                for punct in [". ", "! ", "? ", "\n"]:
-                                    natural_break_pos = content.rfind(
-                                        punct,
-                                        end_position - look_back_range,
-                                        end_position,
-                                    )
-                                    if natural_break_pos != -1:
-                                        end_position = natural_break_pos + 1
-                                        break
-
-                        chunk = content[current_position:end_position].strip()
-
-                        if chunk:
-                            text_chunks.append(
-                                {
-                                    "text": chunk,
-                                    "source": md_file.name,  # Keep using .name for consistency
-                                }
-                            )
-
-                        current_position = (
-                            end_position - chunk_overlap
-                            if end_position < content_length
-                            else content_length
-                        )
+                    text_chunks.extend(chunk_markdown(content, md_file.name))
 
             except Exception as e:
                 print(f"❌ Error reading {md_file}: {e}")
@@ -247,6 +262,7 @@ class Setup:
                             {
                                 "text": chunk["text"],
                                 "source": chunk["source"],
+                                "heading": chunk.get("heading", ""),
                                 "embedding": embedding.values,
                             }
                         )
@@ -327,7 +343,7 @@ class Setup:
                     PointStruct(
                         id=str(uuid.uuid4()),
                         vector=item["embedding"],
-                        payload={"text": item["text"], "source": item["source"]},
+                        payload={"text": item["text"], "source": item["source"], "heading": item.get("heading", "")},
                     )
                 )
 
