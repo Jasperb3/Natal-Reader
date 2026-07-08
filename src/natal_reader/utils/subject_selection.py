@@ -60,9 +60,18 @@ def get_date_of_birth():
     
 
 def get_time_of_birth():
+    """Returns (hour, minute, time_known). If the birth time is unknown, a
+    noon default is used and time_known is False so downstream chart
+    calculation can suppress houses, the Ascendant, and other time-sensitive
+    claims (P0-5)."""
     while True:
         try:
-            time = input("Enter the time of birth in 24-hour format (e.g. 15:30 for 3:30pm): ")
+            time = input(
+                "Enter the time of birth in 24-hour format (e.g. 15:30 for 3:30pm), "
+                "or leave blank / enter 'unknown' if the birth time isn't known: "
+            ).strip()
+            if not time or time.lower() == "unknown":
+                return 12, 0, False
             hour, minute = map(int, time.split(':'))
             if hour < 0 or hour > 23:
                 raise ValueError
@@ -73,7 +82,7 @@ def get_time_of_birth():
              # Format error message in red
             print(f"{RED}Invalid time. Please enter a valid time in 24-hour format (e.g. 15:30 for 3:30pm).{RESET}")
 
-    return hour, minute
+    return hour, minute, True
 
 
 def _is_iana_timezone(tz_str):
@@ -251,7 +260,7 @@ def get_subject_data(subject_name=None):
 def create_subject_data(subject_file_name, original_name):
     print(f"\n--- Creating data for {original_name} ---")
     year, month, day = get_date_of_birth()
-    hour, minute = get_time_of_birth()
+    hour, minute, time_known = get_time_of_birth()
     # Handle potential errors from get_place_of_birth if it returns None or raises exception
     try:
         place_info = get_place_of_birth()
@@ -274,6 +283,7 @@ def create_subject_data(subject_file_name, original_name):
     subject_data = {
         "name": original_name,
         "date_of_birth": dob_str,
+        "time_known": time_known,
         "birthplace": {
             "longitude": lon,
             "latitude": lat,

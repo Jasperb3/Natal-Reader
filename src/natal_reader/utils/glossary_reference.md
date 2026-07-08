@@ -1,0 +1,20 @@
+- **Sect**: Whether a chart is diurnal (Sun above the horizon, houses 7-12) or nocturnal (Sun below the horizon, houses 1-6). Sect determines which planets are favored: the Sun, Jupiter, and Saturn are diurnal planets; the Moon, Venus, and Mars are nocturnal planets. A planet "in sect" (day planet in a day chart, night planet in a night chart) expresses its nature more constructively.
+- **Dignity**: The overall strength or comfort of a planet in the sign it occupies, based on its relationship to that sign's rulership. Includes domicile, exaltation, detriment, fall, and peregrine.
+- **Domicile**: A planet placed in the sign(s) it traditionally rules (e.g. Mars in Aries or Scorpio) — its strongest, most natural condition.
+- **Exaltation**: A planet placed in the one sign where its expression is considered especially elevated and graceful (e.g. the Sun in Aries), second in strength to domicile.
+- **Detriment**: A planet placed in the sign opposite the one it rules — a weakened, uncomfortable condition (e.g. Mars in Libra).
+- **Fall**: A planet placed in the sign opposite its exaltation — its most difficult placement (e.g. the Sun in Libra).
+- **Peregrine**: A planet with no essential dignity at all in its sign (not in domicile, exaltation, detriment, or fall) — it has no established rulership foothold and tends to act on its own uncontained impulse.
+- **Decan**: A ten-degree subdivision of a zodiac sign (each sign has three decans), each carrying a secondary planetary or sign influence that colors the placement.
+- **Triplicity**: The grouping of the twelve signs into four elemental trios (fire, earth, air, water); a triplicity ruler is a planet with rulership authority over an entire element, varying by sect.
+- **Applying / Separating**: Describes an aspect's motion — applying means the faster planet is moving toward an exact aspect (the influence is building); separating means it has passed exact and the influence is waning.
+- **Angular / Succedent / Cadent**: The three house categories by function. Angular houses (1, 4, 7, 10) are houses of action and initiation; succedent houses (2, 5, 8, 11) stabilize and build on angular themes; cadent houses (3, 6, 9, 12) process, adapt, and transition toward the next angular house.
+- **Retrograde**: The apparent backward motion of a planet from Earth's vantage point, associated with internalized, revisited, or reworked expression of that planet's themes.
+- **Out-of-bounds**: A planet whose declination exceeds the Sun's maximum range (roughly ±23.5°), placing it outside the Sun's usual path — traditionally read as an unconventional, unrestrained, or extreme expression of that planet.
+- **Anaretic degree**: The 29th (final) degree of any zodiac sign, considered a critical or urgent degree where the energy of the sign is intensified and a sense of unfinished business or crisis point is present.
+- **Stellium**: A concentration of three or more planets in the same sign or the same house, indicating a strong thematic emphasis in that area of life or mode of expression.
+- **Mutual reception**: A condition where two planets each occupy the sign ruled by the other (e.g. the Sun in Aquarius and Saturn in Leo), creating a supportive exchange that can offset otherwise weak dignity.
+- **Chart ruler**: The traditional planetary ruler of the Ascendant's sign; considered a key significator of the native's overall life path and self-expression.
+- **Lunar Nodes (North Node / South Node)**: The two points where the Moon's orbit crosses the ecliptic. The South Node represents inherited patterns and past-life familiarity; the North Node represents the direction of growth and unfamiliar territory to develop toward.
+- **Syzygy**: The most recent New or Full Moon prior to birth (the prenatal lunation), used as a supplementary significator of underlying life purpose.
+- **Part of Fortune**: A calculated (Arabic) point combining the positions of the Sun, Moon, and Ascendant, traditionally read as an indicator of where ease, joy, or good fortune is most accessible.

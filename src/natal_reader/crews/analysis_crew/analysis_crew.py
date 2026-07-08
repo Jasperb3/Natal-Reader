@@ -36,9 +36,12 @@ class AnalysisCrew():
 
 	@agent
 	def natal_chart_interpreter(self) -> Agent:
+		# Interpreting a deterministic chart dataset — web search results are
+		# astrology-blog noise here and a fabrication vector; the writer keeps
+		# search tools for metaphor-hunting instead (P1-8).
 		return Agent(
 			config=self.agents_config['natal_chart_interpreter'],
-			tools=[google_search_tool, GeminiSearchTool(), QdrantSearchTool()],
+			tools=[QdrantSearchTool()],
 			llm=gpt41_precise,
 			verbose=True
 		)

@@ -10,6 +10,12 @@ review_task:
     Your first evaluation pass must check factual accuracy against this data.
     Flag any discrepancies before evaluating interpretive quality.
 
+    If the chart data begins with a BIRTH TIME UNKNOWN warning, do not flag the
+    absence of houses, the Ascendant, angles, or the chart ruler as an
+    omission — that is correct given the unknown birth time. Instead confirm
+    the report states this limitation plainly and is structured around
+    planets in signs, aspects, and the lunation cycle.
+
     The goal is to identify specific areas for improvement in the report's interpretation and presentation for the reader. Maintain the perspective of a client-oriented report focused on psychological and humanistic astrological insights.
 
     Criteria Checklist: Evaluate the report against these points:

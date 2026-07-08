@@ -48,6 +48,21 @@ def get_kerykeion_natal_chart(subject: AstrologicalSubject, output_directory: st
             "Imum_Coeli",
             "Mean_Lilith",
             "True_South_Node"
+        ],
+        # Matched to immanuel_natal_chart.py's aspect set/orbs (settings.aspects,
+        # settings.planet_orbs) as closely as Kerykeion's API allows: same six
+        # aspect types, same major-aspect orbs. Kerykeion's own default swaps
+        # quincunx for quintile, which would have drawn wheel lines the report
+        # text never mentions and omitted ones it does (P1-6). Residual
+        # difference: Immanuel's per-planet orb table varies by planet speed;
+        # Kerykeion's orb is a single flat value per aspect type.
+        active_aspects=[
+            {"name": "conjunction", "orb": 10},
+            {"name": "opposition", "orb": 10},
+            {"name": "square", "orb": 10},
+            {"name": "trine", "orb": 10},
+            {"name": "sextile", "orb": 6},
+            {"name": "quincunx", "orb": 3},
         ]
     )
 

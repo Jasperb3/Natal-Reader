@@ -59,10 +59,25 @@ natal_chart_interpretation_task:
 
     Constraints:
     - Do NOT fabricate aspects, degrees, or placements not present in the chart data.
-    - Do NOT infer house rulership systems beyond what the data provides.
+    - Essential dignities and chart rulership use traditional rulers only
+      (Mars→Scorpio, Saturn→Aquarius, Jupiter→Pisces); outer planets are
+      generational/psychological overlays and may be mentioned as modern
+      co-rulers, but never determine the chart ruler or dignities.
+    - House system: Placidus is primary. Each object also lists its whole-sign
+      house — use whole-sign houses when making explicitly Hellenistic topical
+      statements, and say which system a house claim uses when they differ.
+    - Where Hellenistic and psychological verdicts conflict on a placement
+      (e.g. a day-chart malefic that classical technique reads as afflicted
+      but psychological framing would soften), present the tension explicitly
+      — classical challenge alongside developmental potential — rather than
+      letting the softer frame silently absorb the harder one.
     - If a data point is absent, state that explicitly rather than inventing one.
     - Cite specific degrees and orbs from the data when making claims.
     - Every claim must be traceable to a specific data point in the chart.
+    - If the chart data begins with a BIRTH TIME UNKNOWN warning, do not
+      delineate houses, the Ascendant, angles, or the chart ruler; structure
+      the analysis around planets in signs, aspects, and the lunation cycle,
+      and state the limitation plainly.
 
     Output guidelines:
     - Clean markdown (no code blocks)
@@ -113,6 +128,13 @@ natal_report_writing_task:
     1. **Introduction** (~200-300 words)
         - Chart type, house system, chart shape, Moon phase.
         - Establish tone: symbolic blueprint of potentials, not fixed destiny.
+        - If the chart data begins with a BIRTH TIME UNKNOWN warning, state
+          this limitation plainly here: houses, the Ascendant, angles, and the
+          chart ruler are omitted, and the report is structured around
+          planets in signs, aspects, and the lunation cycle instead.
+        - Note that the chart wheel draws aspects within a flat orb per aspect
+          type, which may differ slightly from the per-planet orbs cited in
+          the text-based aspect list above.
 
     2. **Energetic Balance & Pattern Emphasis** (~300-500 words)
         - Elemental, modal, hemispheric, and quadrant distributions.
@@ -154,6 +176,10 @@ natal_report_writing_task:
 
     10. **Glossary** (~300-500 words)
         - All technical and symbolic terms used, in accessible language.
+        - Glossary definitions must be adapted from this reference, never
+          invented — clients will look these terms up, and a wrong definition
+          undermines the whole report:
+          {glossary_reference}
 
     Target total report length: 8,000–12,000 words.
 

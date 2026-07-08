@@ -2,6 +2,7 @@ import os
 import json
 import time
 from datetime import datetime
+from pathlib import Path
 from crewai.flow import Flow, listen, start
 from natal_reader.utils.models import NatalState
 from natal_reader.utils.qdrant_setup import Setup
@@ -18,6 +19,10 @@ from natal_reader.crews.gmail_crew.gmail_crew import GmailCrew
 from crewai import Crew, Process
 
 beginning_time = time.time()
+
+GLOSSARY_REFERENCE = (
+    Path(__file__).parent / "utils" / "glossary_reference.md"
+).read_text()
 
 class NatalFlow(Flow[NatalState]):
 
@@ -39,6 +44,7 @@ class NatalFlow(Flow[NatalState]):
             self.state.birthplace_latitude,
             self.state.birthplace_longitude,
             self.state.birthplace_timezone,
+            self.state.time_known,
         )
         self.state.natal_chart = natal_chart
         self.state.chart_facts = get_chart_facts(
@@ -46,6 +52,7 @@ class NatalFlow(Flow[NatalState]):
             self.state.birthplace_latitude,
             self.state.birthplace_longitude,
             self.state.birthplace_timezone,
+            self.state.time_known,
         )
         return
 
@@ -62,7 +69,8 @@ class NatalFlow(Flow[NatalState]):
             "date_of_birth": self.state.dob,
             "place_of_birth": self.state.birthplace,
             "today": self.state.today,
-            "natal_chart": self.state.natal_chart
+            "natal_chart": self.state.natal_chart,
+            "glossary_reference": GLOSSARY_REFERENCE
         }
 
         natal_analysis = (
@@ -161,6 +169,13 @@ class NatalFlow(Flow[NatalState]):
     @timeit
     @listen(format_natal_analysis)
     def get_kerykeion_natal_chart(self):
+        # Houses/angles are unreliable without a known birth time, so the
+        # wheel (which draws them) is skipped rather than rendered from a
+        # fictional noon default (P0-5).
+        if not self.state.time_known:
+            print("Skipping Kerykeion natal chart PNG — birth time unknown")
+            self.state.kerykeion_natal_chart_png = ""
+            return
         print("Creating Kerykeion natal chart PNG")
         kerykeion_subject = get_kerykeion_subject(self.state.name, self.state.date_of_birth.year, self.state.date_of_birth.month, self.state.date_of_birth.day, self.state.date_of_birth.hour, self.state.date_of_birth.minute, self.state.birthplace_city, self.state.birthplace_country, self.state.birthplace_longitude, self.state.birthplace_latitude, self.state.birthplace_timezone)
         kerykeion_natal_chart = get_kerykeion_natal_chart(kerykeion_subject, CHARTS_DIR)
@@ -174,7 +189,11 @@ class NatalFlow(Flow[NatalState]):
         print("Saving natal analysis")
         markdown_file_path = OUTPUT_DIR / f"{self.state.name.replace(' ', '_')}_{TIMESTAMP}.md"
 
-        self.state.final_natal_analysis = self.state.final_natal_analysis.replace("[natal_chart]", f"![Natal Chart]({self.state.kerykeion_natal_chart_png})")
+        if self.state.kerykeion_natal_chart_png:
+            chart_replacement = f"![Natal Chart]({self.state.kerykeion_natal_chart_png})"
+        else:
+            chart_replacement = "*Chart wheel omitted — birth time unknown.*"
+        self.state.final_natal_analysis = self.state.final_natal_analysis.replace("[natal_chart]", chart_replacement)
         with open(markdown_file_path, "w") as f:
             f.write(self.state.final_natal_analysis)
 

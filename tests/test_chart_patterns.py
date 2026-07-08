@@ -116,3 +116,26 @@ def test_find_mutual_receptions_none():
 
     positions = {"Sun": "Leo", "Moon": "Taurus", "Mars": "Cancer"}
     assert find_mutual_receptions(positions) == []
+
+
+def test_unknown_time_chart_omits_houses():
+    from datetime import datetime
+
+    from natal_reader.utils.immanuel_natal_chart import get_natal_chart
+    from conftest import FIXTURE_SUBJECT
+
+    dob = datetime.strptime(FIXTURE_SUBJECT["date_of_birth"], "%Y-%m-%d %H:%M:%S")
+    bp = FIXTURE_SUBJECT["birthplace"]
+    out = get_natal_chart(dob, bp["latitude"], bp["longitude"], bp["timezone"], time_known=False)
+
+    assert "BIRTH TIME UNKNOWN" in out
+    assert "Chart Ruler:" not in out
+    assert "* Asc (Angle)" not in out
+    assert "* MC (Angle)" not in out
+    assert "Hemisphere Balance:\n" not in out
+
+
+def test_known_time_unchanged(chart_text):
+    assert "BIRTH TIME UNKNOWN" not in chart_text
+    assert "Chart Ruler:" in chart_text
+    assert "* Asc (Angle)" in chart_text

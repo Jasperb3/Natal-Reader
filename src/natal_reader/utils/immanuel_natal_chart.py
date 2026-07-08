@@ -83,15 +83,40 @@ def _compute_chart_data(dob: datetime, latitude: float, longitude: float, timezo
     return json.loads(natal_data)
 
 
-def get_chart_facts(dob: datetime, latitude: float, longitude: float, timezone: str | None = None) -> dict:
+def _moon_sign_at(dob: datetime, latitude: float, longitude: float, timezone: str | None) -> str | None:
+    chart_data = _compute_chart_data(dob, latitude, longitude, timezone)
+    moon = next((v for v in chart_data['objects'].values() if v['name'] == 'Moon'), None)
+    return moon.get('sign', {}).get('name') if moon else None
+
+
+def moon_sign_boundary_caveat(dob: datetime, latitude: float, longitude: float, timezone: str | None) -> str | None:
+    """When birth time is unknown, the Moon's sign is read from a noon default —
+    but the Moon can change sign within a single day. Returns a caveat string if
+    the Moon's sign at the start and end of the birth date differ, else None."""
+    day_start = dob.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = dob.replace(hour=23, minute=59, second=59, microsecond=0)
+    sign_start = _moon_sign_at(day_start, latitude, longitude, timezone)
+    sign_end = _moon_sign_at(day_end, latitude, longitude, timezone)
+    if sign_start and sign_end and sign_start != sign_end:
+        return (
+            f"The Moon changes sign on this date (from {sign_start} to {sign_end}) — "
+            "without an exact birth time, the Moon sign given below is not certain."
+        )
+    return None
+
+
+def get_chart_facts(
+    dob: datetime, latitude: float, longitude: float, timezone: str | None = None, time_known: bool = True
+) -> dict:
     """Machine-readable chart facts — the ground truth used by report_verifier.py.
     Built from the same chart_data and the same iter_unique_aspects()/SIGN_RULERS
-    logic that renders the chart text, so facts and text can't diverge (P0-3)."""
+    logic that renders the chart text, so facts and text can't diverge (P0-3).
+    When time_known is False, house/Ascendant/chart-ruler facts are omitted (P0-5)."""
     chart_data = _compute_chart_data(dob, latitude, longitude, timezone)
     obj_by_name = {v['name']: v for v in chart_data['objects'].values()}
     object_map = {str(obj['index']): obj for obj in chart_data['objects'].values()}
 
-    asc_obj = obj_by_name.get('Asc')
+    asc_obj = obj_by_name.get('Asc') if time_known else None
     asc_sign = asc_obj.get('sign', {}).get('name') if asc_obj else None
     asc_sign_number = asc_obj.get('sign', {}).get('number') if asc_obj else None
     chart_ruler = SIGN_RULERS.get(asc_sign) if asc_sign else None
@@ -107,11 +132,12 @@ def get_chart_facts(dob: datetime, latitude: float, longitude: float, timezone: 
         if not obj:
             continue
         planet_signs[name] = obj.get('sign', {}).get('name')
-        house_number = obj.get('house', {}).get('number')
-        planet_houses_placidus[name] = house_number
-        obj_sign_number = obj.get('sign', {}).get('number')
-        if asc_sign_number and obj_sign_number:
-            planet_houses_whole_sign[name] = ((obj_sign_number - asc_sign_number) % 12) + 1
+        if time_known:
+            house_number = obj.get('house', {}).get('number')
+            planet_houses_placidus[name] = house_number
+            obj_sign_number = obj.get('sign', {}).get('number')
+            if asc_sign_number and obj_sign_number:
+                planet_houses_whole_sign[name] = ((obj_sign_number - asc_sign_number) % 12) + 1
 
     aspects = [
         {
@@ -132,13 +158,28 @@ def get_chart_facts(dob: datetime, latitude: float, longitude: float, timezone: 
         "chart_ruler": chart_ruler,
         "house_system": chart_data.get('house_system'),
         "diurnal": chart_data.get('diurnal', False),
+        "time_known": time_known,
     }
 
 
-def get_natal_chart(dob: datetime, latitude: float, longitude: float, timezone: str | None = None) -> str:
+def get_natal_chart(
+    dob: datetime, latitude: float, longitude: float, timezone: str | None = None, time_known: bool = True
+) -> str:
     chart_data = _compute_chart_data(dob, latitude, longitude, timezone)
 
     output_lines = []
+
+    if not time_known:
+        output_lines.append("--- BIRTH TIME UNKNOWN ---")
+        output_lines.append(
+            "A default noon time was used for this chart. Houses, the Ascendant, "
+            "angles (MC/IC/Desc), whole-sign houses, and the chart ruler are NOT "
+            "reliable and are omitted below. Do not delineate them."
+        )
+        moon_caveat = moon_sign_boundary_caveat(dob, latitude, longitude, timezone)
+        if moon_caveat:
+            output_lines.append(moon_caveat)
+        output_lines.append("-" * 25)
 
     # --- 1. Native Information ---
     output_lines.append("--- Natal Chart Summary ---")
@@ -158,10 +199,13 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float, timezone: 
 
     # --- 2. Chart Details ---
     output_lines.append("--- Chart Details ---")
-    output_lines.append(
-        f"House System: {chart_data.get('house_system', 'N/A')} "
-        "(primary; whole-sign houses provided per object for Hellenistic topics)"
-    )
+    if time_known:
+        output_lines.append(
+            f"House System: {chart_data.get('house_system', 'N/A')} "
+            "(primary; whole-sign houses provided per object for Hellenistic topics)"
+        )
+    else:
+        output_lines.append("House System: N/A (birth time unknown)")
     output_lines.append(f"Chart Shape: {chart_data.get('shape', 'N/A')}")
     output_lines.append(f"Diurnal/Nocturnal: {'Diurnal' if chart_data.get('diurnal', False) else 'Nocturnal'}")
     moon_phase_info = chart_data.get('moon_phase', {})
@@ -200,13 +244,18 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float, timezone: 
     )
     sorted_objects.extend(remaining_objects)
 
+    if not time_known:
+        # Angles are meaningless without a real birth time — exclude them
+        # from display rather than show houses/angles computed off a default.
+        sorted_objects = [obj for obj in sorted_objects if obj.get('type', {}).get('name') != 'Angle']
 
     # Build a map for easy lookup by ID later (needed for aspects)
     object_map = {str(obj['index']): obj for obj in chart_data['objects'].values()}
 
     # Whole-sign houses (supplementary, for Hellenistic topical work) are counted
     # from the Ascendant's sign, regardless of the Placidus cusps used above.
-    asc_sign_number = obj_by_name.get('Asc', {}).get('sign', {}).get('number')
+    # Not computed when the birth time is unknown, since the Ascendant is not reliable.
+    asc_sign_number = obj_by_name.get('Asc', {}).get('sign', {}).get('number') if time_known else None
 
     def _ordinal(n: int) -> str:
         if 10 <= n % 100 <= 20:
@@ -230,14 +279,17 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float, timezone: 
         output_lines.append(f"  Position: {sign_long_fmt} {sign_name} ({sign_element}, {sign_modality})")
         output_lines.append(f"  Zodiac Longitude: {long_fmt}")
 
-        house_info = obj.get('house', {})
-        house_name = house_info.get('name', 'N/A')
-        obj_sign_number = sign_info.get('number')
-        if asc_sign_number and obj_sign_number:
-            whole_sign_house = ((obj_sign_number - asc_sign_number) % 12) + 1
-            output_lines.append(f"  House: {house_name} (Placidus) | {_ordinal(whole_sign_house)} (whole sign)")
+        if not time_known:
+            pass  # house placement is not reliable without a known birth time
         else:
-            output_lines.append(f"  House: {house_name}")
+            house_info = obj.get('house', {})
+            house_name = house_info.get('name', 'N/A')
+            obj_sign_number = sign_info.get('number')
+            if asc_sign_number and obj_sign_number:
+                whole_sign_house = ((obj_sign_number - asc_sign_number) % 12) + 1
+                output_lines.append(f"  House: {house_name} (Placidus) | {_ordinal(whole_sign_house)} (whole sign)")
+            else:
+                output_lines.append(f"  House: {house_name}")
 
         decan_info = obj.get('decan', {})
         decan_name = decan_info.get('name', 'N/A')
@@ -271,28 +323,32 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float, timezone: 
     output_lines.append("-" * 25) # Separator
 
     # --- 4. Houses ---
-    output_lines.append("--- Houses (Cusps) ---")
-    # Sort houses by number
-    sorted_houses = sorted(chart_data['houses'].values(), key=lambda h: h['number'])
-    
-    for house in sorted_houses:
-        house_name = house.get('name', 'Unknown House')
-        output_lines.append(f"\n* {house_name} Cusp:")
+    if time_known:
+        output_lines.append("--- Houses (Cusps) ---")
+        # Sort houses by number
+        sorted_houses = sorted(chart_data['houses'].values(), key=lambda h: h['number'])
 
-        sign_info = house.get('sign', {})
-        sign_name = sign_info.get('name', 'N/A')
-        sign_element = sign_info.get('element', 'N/A')
-        sign_modality = sign_info.get('modality', 'N/A')
-        
-        long_fmt = house.get('longitude', {}).get('formatted', 'N/A')
-        sign_long_fmt = house.get('sign_longitude', {}).get('formatted', 'N/A')
-        output_lines.append(f"  Position: {sign_long_fmt} {sign_name} ({sign_element}, {sign_modality})")
-        output_lines.append(f"  Zodiac Longitude: {long_fmt}")
-        
-        size = house.get('size', 0.0)
-        output_lines.append(f"  Size: {size:.2f}°") # Size of the house
+        for house in sorted_houses:
+            house_name = house.get('name', 'Unknown House')
+            output_lines.append(f"\n* {house_name} Cusp:")
 
-    output_lines.append("-" * 25) # Separator
+            sign_info = house.get('sign', {})
+            sign_name = sign_info.get('name', 'N/A')
+            sign_element = sign_info.get('element', 'N/A')
+            sign_modality = sign_info.get('modality', 'N/A')
+
+            long_fmt = house.get('longitude', {}).get('formatted', 'N/A')
+            sign_long_fmt = house.get('sign_longitude', {}).get('formatted', 'N/A')
+            output_lines.append(f"  Position: {sign_long_fmt} {sign_name} ({sign_element}, {sign_modality})")
+            output_lines.append(f"  Zodiac Longitude: {long_fmt}")
+
+            size = house.get('size', 0.0)
+            output_lines.append(f"  Size: {size:.2f}°") # Size of the house
+
+        output_lines.append("-" * 25) # Separator
+    else:
+        output_lines.append("--- Houses (Cusps) --- OMITTED (birth time unknown)")
+        output_lines.append("-" * 25) # Separator
 
     # --- 5. Aspects ---
     output_lines.append("--- Aspects ---")
@@ -356,8 +412,8 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float, timezone: 
     # --- 7. Pre-computed Patterns ---
     output_lines.append("--- Pre-computed Patterns ---")
 
-    # Chart Ruler Identification
-    asc_obj = obj_by_name.get('Asc')
+    # Chart Ruler Identification (requires a known birth time — depends on the Ascendant)
+    asc_obj = obj_by_name.get('Asc') if time_known else None
     if asc_obj:
         asc_sign = asc_obj.get('sign', {}).get('name', 'Unknown')
         chart_ruler_name = SIGN_RULERS.get(asc_sign, 'Unknown')
@@ -389,13 +445,14 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float, timezone: 
             sign_groups[sign] = []
         sign_groups[sign].append(planet.get('name'))
 
-    # Group by house
+    # Group by house (not meaningful without a known birth time)
     house_groups = {}
-    for planet in planets:
-        house = planet.get('house', {}).get('name', 'Unknown')
-        if house not in house_groups:
-            house_groups[house] = []
-        house_groups[house].append(planet.get('name'))
+    if time_known:
+        for planet in planets:
+            house = planet.get('house', {}).get('name', 'Unknown')
+            if house not in house_groups:
+                house_groups[house] = []
+            house_groups[house].append(planet.get('name'))
 
     # Sign and house stelliums are distinct findings and are both reported, even
     # when the same planets form both (that coincidence is itself significant).
@@ -428,22 +485,25 @@ def get_natal_chart(dob: datetime, latitude: float, longitude: float, timezone: 
     else:
         output_lines.append("  None")
 
-    # Hemisphere Balance
-    eastern_houses = ['1st House', '2nd House', '3rd House', '10th House', '11th House', '12th House']
-    western_houses = ['4th House', '5th House', '6th House', '7th House', '8th House', '9th House']
-    northern_houses = ['1st House', '2nd House', '3rd House', '4th House', '5th House', '6th House']
-    southern_houses = ['7th House', '8th House', '9th House', '10th House', '11th House', '12th House']
+    # Hemisphere Balance (house-based — not meaningful without a known birth time)
+    if time_known:
+        eastern_houses = ['1st House', '2nd House', '3rd House', '10th House', '11th House', '12th House']
+        western_houses = ['4th House', '5th House', '6th House', '7th House', '8th House', '9th House']
+        northern_houses = ['1st House', '2nd House', '3rd House', '4th House', '5th House', '6th House']
+        southern_houses = ['7th House', '8th House', '9th House', '10th House', '11th House', '12th House']
 
-    east_count = sum(1 for p in planets if p.get('house', {}).get('name') in eastern_houses)
-    west_count = sum(1 for p in planets if p.get('house', {}).get('name') in western_houses)
-    north_count = sum(1 for p in planets if p.get('house', {}).get('name') in northern_houses)
-    south_count = sum(1 for p in planets if p.get('house', {}).get('name') in southern_houses)
+        east_count = sum(1 for p in planets if p.get('house', {}).get('name') in eastern_houses)
+        west_count = sum(1 for p in planets if p.get('house', {}).get('name') in western_houses)
+        north_count = sum(1 for p in planets if p.get('house', {}).get('name') in northern_houses)
+        south_count = sum(1 for p in planets if p.get('house', {}).get('name') in southern_houses)
 
-    output_lines.append("\nHemisphere Balance:")
-    output_lines.append(f"  Eastern (Houses 10-3): {east_count} planets")
-    output_lines.append(f"  Western (Houses 4-9): {west_count} planets")
-    output_lines.append(f"  Northern (Houses 1-6): {north_count} planets")
-    output_lines.append(f"  Southern (Houses 7-12): {south_count} planets")
+        output_lines.append("\nHemisphere Balance:")
+        output_lines.append(f"  Eastern (Houses 10-3): {east_count} planets")
+        output_lines.append(f"  Western (Houses 4-9): {west_count} planets")
+        output_lines.append(f"  Northern (Houses 1-6): {north_count} planets")
+        output_lines.append(f"  Southern (Houses 7-12): {south_count} planets")
+    else:
+        output_lines.append("\nHemisphere Balance: OMITTED (birth time unknown)")
 
     # Mutual Receptions (traditional planets only)
     traditional_planets = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn']
