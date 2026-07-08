@@ -21,12 +21,16 @@ dependencies = [
     "selenium>=4.32.0",
     "googlemaps>=4.10.0",
     "linkup-sdk>=0.2.4",
+    "qdrant-client>=1.13.0",
 ]
 
 [project.scripts]
 kickoff = "natal_reader.main:kickoff"
 run_crew = "natal_reader.main:kickoff"
 plot = "natal_reader.main:plot"
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
 
 [build-system]
 requires = ["hatchling"]

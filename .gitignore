@@ -9,7 +9,7 @@ outputs/
 docs/
 crew_outputs/
 astro_docs/
-tests/
+tests/*.svg
 for_review/
 timings/
 archive/
