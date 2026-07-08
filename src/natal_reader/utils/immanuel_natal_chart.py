@@ -76,11 +76,67 @@ def iter_unique_aspects(chart_data: dict, object_map: dict):
             yield active_obj, passive_obj, aspect_details
 
 
-def get_natal_chart(dob: datetime, latitude: float, longitude: float, timezone: str | None = None) -> str:
+def _compute_chart_data(dob: datetime, latitude: float, longitude: float, timezone: str | None = None) -> dict:
     subject = charts.Subject(dob, latitude, longitude, timezone=timezone)
     subject_natal = charts.Natal(subject)
     natal_data = json.dumps(subject_natal, cls=ToJSON, indent=4)
-    chart_data = json.loads(natal_data)
+    return json.loads(natal_data)
+
+
+def get_chart_facts(dob: datetime, latitude: float, longitude: float, timezone: str | None = None) -> dict:
+    """Machine-readable chart facts — the ground truth used by report_verifier.py.
+    Built from the same chart_data and the same iter_unique_aspects()/SIGN_RULERS
+    logic that renders the chart text, so facts and text can't diverge (P0-3)."""
+    chart_data = _compute_chart_data(dob, latitude, longitude, timezone)
+    obj_by_name = {v['name']: v for v in chart_data['objects'].values()}
+    object_map = {str(obj['index']): obj for obj in chart_data['objects'].values()}
+
+    asc_obj = obj_by_name.get('Asc')
+    asc_sign = asc_obj.get('sign', {}).get('name') if asc_obj else None
+    asc_sign_number = asc_obj.get('sign', {}).get('number') if asc_obj else None
+    chart_ruler = SIGN_RULERS.get(asc_sign) if asc_sign else None
+
+    planet_names = ['Sun', 'Moon', 'Mercury', 'Venus', 'Mars', 'Jupiter',
+                     'Saturn', 'Uranus', 'Neptune', 'Pluto']
+
+    planet_signs = {}
+    planet_houses_placidus = {}
+    planet_houses_whole_sign = {}
+    for name in planet_names:
+        obj = obj_by_name.get(name)
+        if not obj:
+            continue
+        planet_signs[name] = obj.get('sign', {}).get('name')
+        house_number = obj.get('house', {}).get('number')
+        planet_houses_placidus[name] = house_number
+        obj_sign_number = obj.get('sign', {}).get('number')
+        if asc_sign_number and obj_sign_number:
+            planet_houses_whole_sign[name] = ((obj_sign_number - asc_sign_number) % 12) + 1
+
+    aspects = [
+        {
+            "a": active_obj.get('name'),
+            "b": passive_obj.get('name'),
+            "type": aspect_details.get('type'),
+            "orb": aspect_details.get('orb'),
+        }
+        for active_obj, passive_obj, aspect_details in iter_unique_aspects(chart_data, object_map)
+    ]
+
+    return {
+        "planet_signs": planet_signs,
+        "planet_houses_placidus": planet_houses_placidus,
+        "planet_houses_whole_sign": planet_houses_whole_sign,
+        "aspects": aspects,
+        "asc_sign": asc_sign,
+        "chart_ruler": chart_ruler,
+        "house_system": chart_data.get('house_system'),
+        "diurnal": chart_data.get('diurnal', False),
+    }
+
+
+def get_natal_chart(dob: datetime, latitude: float, longitude: float, timezone: str | None = None) -> str:
+    chart_data = _compute_chart_data(dob, latitude, longitude, timezone)
 
     output_lines = []
 

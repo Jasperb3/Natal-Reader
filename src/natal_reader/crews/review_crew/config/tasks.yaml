@@ -125,6 +125,8 @@ report_enhancement_task:
 
     Today's date is {today}
 
+    Deterministic verification found these factual mismatches — correct each one: {verification_notes}
+
     Report:
     {report}
   expected_output: >

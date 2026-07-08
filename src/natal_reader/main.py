@@ -6,14 +6,16 @@ from crewai.flow import Flow, listen, start
 from natal_reader.utils.models import NatalState
 from natal_reader.utils.qdrant_setup import Setup
 from natal_reader.utils.decorators import track_token_usage, timeit, timings_file_path
-from natal_reader.utils.immanuel_natal_chart import get_natal_chart
+from natal_reader.utils.immanuel_natal_chart import get_natal_chart, get_chart_facts
 from natal_reader.utils.kerykeion_chart_utils import get_kerykeion_subject, get_kerykeion_natal_chart
 from natal_reader.utils.convert_to_pdf import convert_md_to_pdf
-from natal_reader.utils.constants import TIMESTAMP, CHARTS_DIR, NOW_DT, OUTPUT_DIR
+from natal_reader.utils.report_verifier import verify_report
+from natal_reader.utils.markdown_tagger import tag_report
+from natal_reader.utils.constants import TIMESTAMP, CHARTS_DIR, NOW_DT, OUTPUT_DIR, CREW_OUTPUTS_DIR
 from natal_reader.crews.analysis_crew.analysis_crew import AnalysisCrew
 from natal_reader.crews.review_crew.review_crew import ReviewCrew
-from natal_reader.crews.formatting_crew.formatting_crew import FormattingCrew
 from natal_reader.crews.gmail_crew.gmail_crew import GmailCrew
+from crewai import Crew, Process
 
 beginning_time = time.time()
 
@@ -39,6 +41,12 @@ class NatalFlow(Flow[NatalState]):
             self.state.birthplace_timezone,
         )
         self.state.natal_chart = natal_chart
+        self.state.chart_facts = get_chart_facts(
+            self.state.date_of_birth,
+            self.state.birthplace_latitude,
+            self.state.birthplace_longitude,
+            self.state.birthplace_timezone,
+        )
         return
 
 
@@ -82,7 +90,8 @@ class NatalFlow(Flow[NatalState]):
             "natal_chart": self.state.natal_chart,
             "today": self.state.today,
             "date_of_birth": self.state.dob,
-            "place_of_birth": self.state.birthplace
+            "place_of_birth": self.state.birthplace,
+            "verification_notes": ""
         }
 
         enhanced_natal_analysis = (
@@ -94,34 +103,59 @@ class NatalFlow(Flow[NatalState]):
         print("Natal analysis enhanced")
         self.state.final_natal_analysis = enhanced_natal_analysis.raw
 
+        self._verify_and_correct_report()
+
         return enhanced_natal_analysis
 
+    def _verify_and_correct_report(self):
+        """Deterministic post-enhancement check (P0-3): catches factual
+        mismatches an LLM critic can miss, with one targeted correction pass."""
+        mismatches = verify_report(self.state.final_natal_analysis, self.state.chart_facts)
+        if not mismatches:
+            print("Report verification: no mismatches found")
+            return
 
-    @timeit
-    @track_token_usage
-    @listen(review_natal_analysis)
-    def format_natal_analysis(self):
-        """HTML tagging for PDF rendering — separate from content review."""
-        print("Formatting natal analysis for PDF")
+        print(f"Report verification found {len(mismatches)} mismatch(es); running targeted correction")
+        mismatches_path = CREW_OUTPUTS_DIR / "verification_mismatches.md"
+        mismatches_path.write_text("\n".join(f"- {m}" for m in mismatches))
 
-        inputs = {
+        review_crew_instance = ReviewCrew()
+        correction_crew = Crew(
+            agents=[review_crew_instance.report_enhancer()],
+            tasks=[review_crew_instance.report_enhancement_task()],
+            process=Process.sequential,
+            verbose=True
+        )
+        corrected = correction_crew.kickoff(inputs={
             "name": self.state.name,
             "report": self.state.final_natal_analysis,
             "today": self.state.today,
             "date_of_birth": self.state.dob,
-            "place_of_birth": self.state.birthplace
-        }
+            "place_of_birth": self.state.birthplace,
+            "verification_notes": "\n".join(f"- {m}" for m in mismatches)
+        })
+        self.state.final_natal_analysis = corrected.raw
 
-        formatted_analysis = (
-            FormattingCrew()
-            .crew()
-            .kickoff(inputs=inputs)
-        )
+        remaining = verify_report(self.state.final_natal_analysis, self.state.chart_facts)
+        if remaining:
+            print(f"WARNING: {len(remaining)} mismatch(es) remain after correction pass — continuing anyway")
+            mismatches_path.write_text("\n".join(f"- {m}" for m in remaining))
+        else:
+            print("Report verification: all mismatches corrected")
+
+
+    @timeit
+    @listen(review_natal_analysis)
+    def format_natal_analysis(self):
+        """Deterministic HTML tagging for PDF rendering (P1-4) — replaces the
+        LLM formatting_crew pass, which regenerated the whole 8-12k-word report
+        a third time just to inject <span> tags with no integrity check."""
+        print("Formatting natal analysis for PDF")
+
+        self.state.final_natal_analysis = tag_report(self.state.final_natal_analysis)
 
         print("Natal analysis formatted")
-        self.state.final_natal_analysis = formatted_analysis.raw
-
-        return formatted_analysis
+        return
 
 
     @timeit

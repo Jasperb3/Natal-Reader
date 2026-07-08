@@ -17,6 +17,7 @@ class NatalState(BaseModel):
     birthplace_timezone: str = subject_data["birthplace"]["timezone"]
     today: str = datetime.now().strftime("%A, %d %B %Y")
     natal_chart: str = ""
+    chart_facts: dict = {}
     kerykeion_natal_chart_png: str = ""
     natal_analysis: str = ""
     final_natal_analysis: str = ""
