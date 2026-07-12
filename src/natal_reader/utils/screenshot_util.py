@@ -1,17 +1,89 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+import json
 import os
+import re
+import subprocess
+import tempfile
+import urllib.request
+import zipfile
+from pathlib import Path
 from contextlib import contextmanager
 from datetime import datetime
 
 # Constants
 CHROME_BINARY_PATH = "/usr/bin/chromium-browser"
 CHROMEDRIVER_PATH = "/usr/local/bin/chromedriver"
+CHROME_FOR_TESTING_MILESTONES_URL = "https://googlechromelabs.github.io/chrome-for-testing/latest-versions-per-milestone.json"
+CHROME_FOR_TESTING_DOWNLOAD_URL = "https://storage.googleapis.com/chrome-for-testing-public/{version}/linux64/chromedriver-linux64.zip"
+
+
+def _get_version_major(binary_path: str) -> str | None:
+    """Runs `<binary> --version` and returns the major (milestone) version, or None if unavailable."""
+    try:
+        output = subprocess.run(
+            [binary_path, "--version"], capture_output=True, text=True, timeout=10
+        ).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+    match = re.search(r"(\d+)\.\d+\.\d+\.\d+", output)
+    return match.group(1) if match else None
+
+
+def _ensure_chromedriver_matches_chrome():
+    """Downloads a matching chromedriver build if it doesn't match the installed Chrome/Chromium major version."""
+    chrome_major = _get_version_major(CHROME_BINARY_PATH)
+    if chrome_major is None:
+        print(f"Warning: could not determine Chrome version from {CHROME_BINARY_PATH}")
+        return
+
+    chromedriver_major = _get_version_major(CHROMEDRIVER_PATH)
+    if chromedriver_major == chrome_major:
+        return
+
+    print(
+        f"chromedriver version (milestone {chromedriver_major}) does not match "
+        f"Chrome (milestone {chrome_major}); attempting to download a matching build..."
+    )
+    try:
+        with urllib.request.urlopen(CHROME_FOR_TESTING_MILESTONES_URL, timeout=15) as response:
+            milestones = json.load(response)["milestones"]
+
+        milestone_info = milestones.get(chrome_major)
+        if milestone_info is None:
+            print(f"Warning: no known chromedriver build for Chrome milestone {chrome_major}")
+            return
+
+        full_version = milestone_info["version"]
+        download_url = CHROME_FOR_TESTING_DOWNLOAD_URL.format(version=full_version)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            zip_path = os.path.join(tmp_dir, "chromedriver-linux64.zip")
+            urllib.request.urlretrieve(download_url, zip_path)
+
+            with zipfile.ZipFile(zip_path) as zip_file:
+                zip_file.extract("chromedriver-linux64/chromedriver", tmp_dir)
+
+            extracted_path = os.path.join(tmp_dir, "chromedriver-linux64", "chromedriver")
+            with open(extracted_path, "rb") as extracted_file:
+                new_binary = extracted_file.read()
+
+            with open(CHROMEDRIVER_PATH, "wb") as driver_file:
+                driver_file.write(new_binary)
+            os.chmod(CHROMEDRIVER_PATH, 0o755)
+
+        print(f"chromedriver updated to version {full_version}")
+    except Exception as e:
+        print(f"Warning: failed to update chromedriver automatically: {e}")
+
 
 @contextmanager
 def get_driver(window_size=(1920, 1080)):
     """Context manager for handling driver creation and cleanup"""
+    _ensure_chromedriver_matches_chrome()
+
     chrome_options = Options()
     chrome_options.binary_location = CHROME_BINARY_PATH
     
