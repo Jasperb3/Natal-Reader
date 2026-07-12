@@ -37,15 +37,23 @@ uv sync
 Create a `.env` file in the project root with the following:
 
 ```bash
-# Required API Keys
+# LLM Providers
 OPENAI_API_KEY=your_openai_api_key
 GEMINI_API_KEY=your_gemini_api_key
+GOOGLE_API_KEY=your_google_api_key
+
+# Google Search & Maps (web search tool + birth location geocoding)
+GOOGLE_SEARCH_API_KEY=your_google_search_api_key
+SEARCH_ENGINE_ID=your_search_engine_id
+GMAPS_API_KEY=your_google_maps_api_key
 
 # Qdrant Local Configuration
 QDRANT_LOCAL_URL=http://localhost:6333
 QDRANT_LOCAL_API_KEY=your_qdrant_local_api_key
+QDRANT_COLLECTION_NAME=your_qdrant_collection_name
 
-# Gmail OAuth (for email delivery)
+# Gmail (for email delivery)
+SENDER_EMAIL=your_gmail_address
 # Follow Google OAuth setup to generate token.json
 ```
 
@@ -64,7 +72,7 @@ Natal Reader uses a local Qdrant instance for vector storage of astrology refere
    QDRANT_LOCAL_API_KEY=your_local_api_key  # optional if no auth configured
    ```
 
-On first run, the `setup_qdrant` step will automatically index reference books from the `docs/` directory into the local instance.
+On first run, the `setup_qdrant` step will automatically index reference books from the `astro_docs/` directory into the local instance. (The top-level `docs/` directory holds project/engineering documentation, not astrology reference material.)
 
 ### 5. Configure Gmail OAuth (Optional)
 
@@ -73,6 +81,17 @@ For email delivery functionality:
 1. Enable Gmail API in Google Cloud Console
 2. Create OAuth 2.0 credentials
 3. Run the OAuth flow to generate `token.json` in `src/natal_reader/utils/`
+
+### 6. Run Tests (Optional)
+
+The test suite covers pure-function/offline logic only (chart pattern detection,
+RAG chunking, markdown tagging, report verification) — no LLM calls, so it runs
+without API keys:
+
+```bash
+uv sync --group dev
+.venv/bin/python -m pytest tests/ -v
+```
 
 ## Project Structure
 
@@ -91,18 +110,21 @@ natal_reader/
 │   │   ├── markdown_tagger.py        # Deterministic HTML tagging for PDF styling
 │   │   ├── chunking.py               # Heading-aware markdown chunking for the RAG pipeline
 │   │   ├── qdrant_setup.py           # Vector DB indexing
+│   │   ├── subject_selection.py      # Interactive CLI: select or create birth data
 │   │   ├── decorators.py             # Timing & token tracking
 │   │   └── models.py                 # Pydantic state management
 │   ├── tools/
 │   │   ├── qdrant_search_tool.py     # RAG retrieval
 │   │   ├── gemini_search_tool.py     # Web search
 │   │   └── gmail_tool_with_attachment.py
-│   ├── main.py               # Flow pipeline definition
-│   └── utils/
-├── docs/                     # Astrology reference books (RAG source)
-├── outputs/                  # Generated reports & PDFs
-├── crew_outputs/             # Intermediate crew task outputs
-└── .env                      # Environment configuration
+│   ├── subjects/              # Birth data JSON files (interactive selection/creation)
+│   └── main.py                # Flow pipeline definition
+├── astro_docs/                # Astrology reference books (RAG source)
+├── docs/                      # Project/engineering documentation (audits, plans)
+├── tests/                     # Offline pytest suite (no LLM calls)
+├── outputs/                   # Generated reports & PDFs
+├── crew_outputs/              # Intermediate crew task outputs
+└── .env                       # Environment configuration
 ```
 
 ## Pipeline Architecture
@@ -129,7 +151,7 @@ Natal Reader executes a 9-step sequential pipeline via `NatalFlow`:
          ▼
 ┌─────────────────────────┐
 │ 4. review_analysis      │ ─── ReviewCrew: critic (temp 0.2) + enhancer,
-│   (Gemini)   │     then deterministic verify_report() against
+│   (Gemini Pro)           │     then deterministic verify_report() against
 └────────┬────────────────┘    chart_facts, with a targeted correction pass
          │
          ▼
@@ -164,14 +186,27 @@ Natal Reader executes a 9-step sequential pipeline via `NatalFlow`:
 
 ## Running the Project
 
-Execute the pipeline from the project root:
+Execute the pipeline from the project root using the `crewai` CLI (or the equivalent
+`uv run` script — both invoke the same `kickoff()` entry point):
 
 ```bash
-uv run python src/natal_reader/main.py
+crewai run
+# equivalent: uv run kickoff
+# equivalent: uv run python src/natal_reader/main.py
+```
+
+To generate a diagram of the flow instead of running it:
+
+```bash
+uv run plot
 ```
 
 The system will:
-1. Prompt for subject selection (birth data from `src/natal_reader/subjects/`)
+1. Prompt for subject selection — pick an existing birth data JSON from
+   `src/natal_reader/subjects/`, or create a new one interactively (date, time,
+   place — geocoded via `GMAPS_API_KEY`). Time of birth can be left blank or set
+   to `unknown`, which switches the flow to an unknown-birth-time mode (see
+   [Key Features](#key-features))
 2. Execute the 9-step pipeline
 3. Output a PDF report to `outputs/`
 4. Create a Gmail draft for delivery
@@ -183,7 +218,7 @@ Natal Reader uses three specialized AI crews, plus a deterministic formatting st
 | Crew | Model | Agents | Purpose |
 |------|-------|--------|---------|
 | **AnalysisCrew** | GPT-4.1 | interpreter, writer | Single-pass unified analysis combining Hellenistic, Psychological, and Humanistic traditions |
-| **ReviewCrew** | Gemini 3.1 (critic: temp 0.2, enhancer: temp 0.7) | critic, enhancer | Factual verification of degrees/aspects + quality enhancement, followed by deterministic `verify_report()` |
+| **ReviewCrew** | Gemini Pro (critic: temp 0.2, enhancer: temp 0.7) | critic, enhancer | Factual verification of degrees/aspects + quality enhancement, followed by deterministic `verify_report()` |
 | **GmailCrew** | GPT-4.1 | email_writer, gmail_drafter | Compose and draft email with PDF attachment |
 
 HTML markup for PDF styling is applied by `utils/markdown_tagger.py` (no LLM call) —
@@ -214,6 +249,38 @@ Receives raw chart data alongside the analysis for factual verification:
 - Ensures consistency across all sections
 
 ## Key Features
+
+### Deterministic Report Verification
+
+Rather than trusting an LLM critic to check LLM-generated output (a known failure
+mode — a creative-temperature model verifying its own claims), the review step
+runs a deterministic pass:
+
+- `get_chart_facts()` builds a structured dict (planet signs, planet houses in
+  both Placidus and whole-sign, aspects, Ascendant sign, chart ruler, etc.) from
+  the exact same chart data and dedup logic that renders the text fed to the LLM
+  crews, so the two representations can't diverge.
+- `verify_report()` regex-matches planet/sign, planet/house, and aspect claims in
+  the final report against those facts and returns concrete mismatches. It's
+  precision-over-recall: ambiguous sentences are skipped rather than flagged.
+- On a mismatch, the flow runs one targeted correction kickoff of just the
+  enhancer agent + `report_enhancement_task` (not the whole ReviewCrew), then
+  re-verifies.
+
+### Unknown Birth Time Handling
+
+Birth time can be left blank or set to `unknown` during subject selection. When
+this happens (`time_known = False` on the flow state):
+
+- Houses, angle objects (Ascendant/MC/IC/Descendant), whole-sign houses, the
+  chart ruler, house-based stelliums, and hemisphere balance are all omitted from
+  the chart data and report.
+- A `BIRTH TIME UNKNOWN` warning is prepended to the chart text/facts, and a Moon
+  sign boundary caveat is added if the Moon changes sign on the birth date.
+- The analysis and review tasks skip house/Ascendant/chart-ruler delineation and
+  state the limitation in the report's Introduction.
+- Chart wheel generation is skipped entirely, and the PDF gets a plain note in
+  place of the chart image.
 
 ### Pre-computed Chart Patterns
 
@@ -246,7 +313,11 @@ All steps are decorated with `@track_token_usage` and `@timeit` decorators, logg
 
 ### Subject Data
 
-Birth data is stored as JSON files in `src/natal_reader/subjects/`:
+Birth data is stored as JSON files in `src/natal_reader/subjects/`. At startup,
+`subject_selection.py` lets you either pick an existing file from that directory
+or create a new one interactively — it prompts for date, time (blank/`unknown`
+supported), and place of birth, geocoding the location via `GMAPS_API_KEY`, and
+saves the result as a new subject JSON for reuse.
 
 ```json
 {
