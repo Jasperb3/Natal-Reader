@@ -11,18 +11,18 @@ load_dotenv()
 
 google_search_tool = GoogleSearchTool(api_key=os.getenv("GOOGLE_SEARCH_API_KEY"), cx=os.getenv("SEARCH_ENGINE_ID"))
 
-# Precise temperature for technical interpretation
-gpt41_precise = LLM(
-	model="gpt-4.1",
+# Fast/cheap tier for precise, technical chart-fact interpretation
+gpt56_luna_precise = LLM(
+	model="gpt-5.6-luna",
 	api_key = os.getenv("OPENAI_API_KEY"),
-	temperature=0.4
+	reasoning_effort="low"
 )
 
-# Creative temperature for narrative writing
-gpt41_creative = LLM(
-	model="gpt-4.1",
+# Main/balanced tier for creative narrative writing
+gpt56_terra_creative = LLM(
+	model="gpt-5.6-terra",
 	api_key = os.getenv("OPENAI_API_KEY"),
-	temperature=0.75
+	reasoning_effort="medium"
 )
 
 
@@ -42,7 +42,7 @@ class AnalysisCrew():
 		return Agent(
 			config=self.agents_config['natal_chart_interpreter'],
 			tools=[QdrantSearchTool()],
-			llm=gpt41_precise,
+			llm=gpt56_luna_precise,
 			verbose=True
 		)
 
@@ -51,7 +51,7 @@ class AnalysisCrew():
 		return Agent(
 			config=self.agents_config['natal_report_writer'],
 			tools=[google_search_tool, GeminiSearchTool(), QdrantSearchTool()],
-			llm=gpt41_creative,
+			llm=gpt56_terra_creative,
 			verbose=True
 		)
 
