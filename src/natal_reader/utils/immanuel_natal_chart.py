@@ -77,6 +77,10 @@ def iter_unique_aspects(chart_data: dict, object_map: dict):
 
 
 def _compute_chart_data(dob: datetime, latitude: float, longitude: float, timezone: str | None = None) -> dict:
+    # Re-assert the ephemeris path: crewai runs flow methods via asyncio.to_thread,
+    # and pyswisseph doesn't reliably retain the path set at import time once a
+    # different worker thread makes the first Swiss Ephemeris call.
+    settings.set_swe_filepath()
     subject = charts.Subject(dob, latitude, longitude, timezone=timezone)
     subject_natal = charts.Natal(subject)
     natal_data = json.dumps(subject_natal, cls=ToJSON, indent=4)

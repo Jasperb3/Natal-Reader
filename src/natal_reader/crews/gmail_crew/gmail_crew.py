@@ -8,10 +8,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-gpt41 = LLM(
-	model="gpt-4.1",
+gpt56_terra = LLM(
+	model="gpt-5.6-terra",
 	api_key = os.getenv("OPENAI_API_KEY"),
-	temperature=0.7
+	reasoning_effort="medium"
+)
+
+gpt56_luna = LLM(
+	model="gpt-5.6-luna",
+	api_key = os.getenv("OPENAI_API_KEY"),
+	reasoning_effort="low"
 )
 
 gpt41mini = LLM(
@@ -31,7 +37,7 @@ class GmailCrew():
 	def email_writing_agent(self) -> Agent:
 		return Agent(
 			config=self.agents_config['email_writing_agent'],
-			llm=gpt41,
+			llm=gpt56_terra,
 			verbose=True
 )
 
@@ -40,7 +46,7 @@ class GmailCrew():
 		return Agent(
 			config=self.agents_config['gmail_draft_agent'],
 			tools=[GmailAttachmentTool()],
-			llm=gpt41,
+			llm=gpt56_luna,
 			verbose=True
 )
 

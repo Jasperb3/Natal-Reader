@@ -273,8 +273,8 @@ def kickoff():
 
     subject_data = get_subject_data()
     state = NatalState.from_subject(subject_data)
-    natal_flow = NatalFlow(**state.model_dump())
-    natal_flow.kickoff()
+    natal_flow = NatalFlow()
+    natal_flow.kickoff(inputs=state.model_dump())
 
 
 def plot():
